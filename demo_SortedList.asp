@@ -1,0 +1,1 @@
+<%dim colset col = server.createObject("System.Collections.SortedList")col.add "RESO", 1col.add "VENDITA", 2col.add "CONTO VISIONE", 4response.write col.getKey(col.indexofvalue(4))&"<br>"dim ifor i = 0 to col.count - 1  response.write col.getKey(i) & " = "_     & col.getByIndex(i) & "<br />"next%>

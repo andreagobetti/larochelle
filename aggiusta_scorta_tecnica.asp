@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><!--#include virtual="/multidict_cl.asp" --><!--#include virtual="/jsonObject.class.asp" -->	 <%		sql="SELECT DISTINCT iduser FROM  dipendenti"set rs=conn.execute (sql)do while not rs.EOF	conn.execute ("")			rs.MoveNextloop	%>

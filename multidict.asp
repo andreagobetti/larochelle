@@ -1,0 +1,166 @@
+<%
+'Option Explict
+
+Class MultiDimensionalDictionary
+'######################################################################
+'Named Dictionary Recordset Object
+'######################################################################
+Public SetKey
+Private Dict
+Private AddNewRecord
+'######################################################################
+Private Sub Class_Initialize
+Set Dict = Server.CreateObject("Scripting.Dictionary")
+Set AddNewRecord = Server.CreateObject("Scripting.Dictionary")
+End Sub
+'######################################################################
+Private Sub Class_Terminate
+Set Dict = Nothing
+Set AddNewRecord = Nothing
+End Sub
+'######################################################################
+Public Sub Update
+ Dict.Add SetKey, AddNewRecord
+Set AddNewRecord = Server.CreateObject("Scripting.Dictionary")
+End Sub
+'######################################################################
+Public Function GetCollection
+Set GetCollection = Dict
+End Function
+'######################################################################
+Public Sub SetField(byVal Key, byVal Value)
+If AddNewRecord.Exists(Key) = False Then
+ AddNewRecord.Add Key, Value
+Else
+ AddNewRecord(Key) = Value
+End If
+End Sub
+'######################################################################
+Public Function Records
+ Records = Dict.Keys
+End Function
+'######################################################################
+Public Function Fields(byVal PrimaryKey)
+Fields = Dict(PrimaryKey).Keys
+End Function
+'######################################################################
+Public Function Item(byVal Key, byVal Value)
+On Error Resume Next
+If Dict.Item(Key).Exists(Value) Then
+ Item = Dict.Item(Key).Item(Value)
+End If
+On Error Goto 0
+End Function
+'######################################################################
+Public Function Exists(byVal Key, byVal Value)
+'On Error Resume Next
+If IsNull(Value) Or Value = "" Then
+ Exists = Dict.Item(Key).Exists
+Else
+ Exists = Dict.Item(Key).Exists(Value)
+End If
+'On Error Goto 0
+End Function
+
+Public Function Count
+ Count = Dict.Count
+End Function
+'######################################################################
+End class
+
+%>
+<html>
+<body>
+<%
+'######################################################################
+'Example Usage
+Dim Dict    'The Dict Object
+Dim Record    'The Record Object
+Dim Field    'The Field Object
+Set Dict = New MultiDimensionalDictionary 'Create an Instance of the Class
+'######################################################################
+'ADDING RECORDS TO DICTIONARY
+'######################################################################
+'EACH NEW KEY MUST BE UNIQUE OTHERWISE IT WILL OVERWRITE THE PREVIOUS
+'KEY WITH THE SAME NAME.
+'EACH FIELD MUST ALSO BE UNIQUE IN EACH RECORD OTHERWISE IT WILL
+'OVERWRITE THE PREVIOUS KEY IN THE SAME RECORD WITH THE NEW VALUE
+
+Response.Write "Dict.Count = " &  Dict.Count &  "<br/>"
+
+ Dict.SetKey = "First" 'Key the first record
+ Dict.SetField "1", "Record1 Field 1 Value"
+ Dict.SetField "2", "Record1 Field 2 Value"
+ Dict.SetField "3", "Record1 Field 3 Value"
+ Dict.SetField "4", "Record1 Field 4 Value"
+ Dict.SetField "5", "Record1 Field 5 Value"
+ Dict.Update 'Bind the new record and preapre for the next record
+
+ Dict.SetKey = "Second" 'Key the second record
+ Dict.SetField "Alpha", "Record2 Field 1 Value"
+ Dict.SetField "Beta", "Record2 Field 2 Value"
+ Dict.SetField "Charlie", "Record2 Field 3 Value"
+ Dict.SetField "Delta", "Record2 Field 4 Value"
+ Dict.SetField "Echo", "Record2 Field 5 Value"
+ Dict.Update 'Bind the new record and preapre for the next record
+
+ Dict.SetKey = "Third" 'Key the third record
+ Dict.SetField "A", "Record3 Field 1 Value"
+ Dict.SetField "B", "Record3 Field 2 Value"
+ Dict.SetField "C", "Record3 Field 3 Value"
+ Dict.SetField "D", "Record3 Field 4 Value"
+ Dict.SetField "E", "Record3 Field 5 Value"
+ Dict.Update
+
+ Dict.SetKey = 4 'Key the third record
+ Dict.SetField 0, "Record4 Field 1 Value"
+ Dict.SetField 1, "Record4 Field 2 Value"
+ Dict.SetField 2, "Record4 Field 3 Value"
+ Dict.SetField 3, "Record4 Field 4 Value"
+ Dict.SetField 4, "Record4 Field 5 Value"
+ Dict.Update
+
+Response.Write "Dict.Count = " &  Dict.Count &  "<br/>"
+'######################################################################
+'ENUMERATE RECORDS
+'This method shows you how to enumerate the record/field collection.
+'######################################################################
+Response.Write("-- ENUMERATE RECORDS --<br>")
+For Each Record in Dict.Records
+Response.Write("<strong>Record: " &  Record &  "</strong><br>")
+For Each Field in Dict.Fields(Record)
+Response.Write("&nbsp; &nbsp; &nbsp;<strong>Field Name:</strong> " & Field &  " : <strong> Value:</strong> " &  Dict.Item(Record, Field) &  "<br>")
+Next
+Response.Write("<hr>")
+Next
+'######################################################################
+'CALL A SINGLE NAMED RECORD WITH THE ITEM METHOD
+'this example show you how to call a single record/field value. if record does not
+'exist the call will return an empty string
+'######################################################################
+Response.Write("-- CALL A SINGLE NAMED RECORD --<br>")
+Response.Write( "<strong>Dict.Item(""First"", ""1"") = </strong>" & Dict.Item("First", "1") &  "<br>")
+Response.Write( "<strong>Dict.Item(""Second"", ""Alpha"") = </strong>" & Dict.Item("Second", "Alpha") &  "<br>")
+Response.Write( "<strong>Dict.Item(""Third"", ""c"") = </strong>" & Dict.Item("Third", "C") & "<br>")
+Response.Write( "<strong>Dict.Item(4, 1) = </strong>" & Dict.Item(4, 1) &  "<br>")
+Response.Write("<hr>")
+'######################################################################
+'USING THE EXISTS METHOD
+Response.Write("-- EXISTS --<br>")
+Response.Write( "<strong>Dict.Exists(""First"", ""1"") = </strong>" & Dict.Exists("First", "1") & "<br>")
+Response.Write("<hr>")
+'######################################################################
+'TODO: Need to add a method for updating a existing record.
+'TODO: Add a method for adding new records to an existing set.
+'######################################################################
+Set Dict = Nothing
+'######################################################################
+If err.number <> 0 Then
+Response.Write err.number & " : " & Err.Description
+End If
+Dim response_time
+ response_time = cdbl(timer() - s_time)
+Response.Write("This page was generated in " & response_time & " seconds.")
+%>
+</body>
+</html>

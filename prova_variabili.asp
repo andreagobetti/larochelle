@@ -1,0 +1,1 @@
+<%dim nn=0n3=0call ripeti()sub ripeti()	dim n1	n1=n	n2=n	n3=n	response.write "Entro n:"&n&", n1:"&n1&", n2:"&n2&", n3:"&n3&"<br>"	n=n+1		if n<5 then		call ripeti()	end if	response.write "Esco n:"&n&", n1:"&n1&", n2:"&n2&", n3:"&n3&"<br>"end sub			%>

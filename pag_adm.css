@@ -1,0 +1,522 @@
+/*
+Original design: 1024px (v3.0 - Jun 01, 2010) - A free xhtml/css website template by Andreas Viklund.
+For more information, see http://andreasviklund.com/templates/1024px/
+*/
+/* Ricami.piemonte.it */
+
+/* General tags */
+
+body {background:#ffffff; color:#000000; font:76% Verdana,Tahoma,Arial,sans-serif; margin:0 auto; padding:0; overflow-y: scroll;}
+
+a {FONT-SIZE: 12px; COLOR: #000000; TEXT-DECORATION: none;}
+a:hover {text-decoration:underline;}
+A.menulat  { FONT-WEIGHT: bold; FONT-SIZE: 13px; COLOR: #000; TEXT-DECORATION: none;}
+A.menulat:HOVER { FONT-WEIGHT: bold; FONT-SIZE: 13px; COLOR: #000; TEXT-DECORATION: underline;}
+
+
+/* Additional classes */
+.box {background:#4088b8; border:1px solid #c8c8c8; color:#fff; font-size:0.9em; padding:10px 10px 10px 13px;}
+.box a {color:#f0f0f0;}
+.left {float:left; margin:0 15px 4px 0;}
+.right {float:right; margin:0 0 4px 15px;}
+.readmore {margin:-10px 10px 12px 0; text-align:right;}
+.timestamp {font-size:1.2em; margin:-5px 0 15px 10px;}
+.timestamp a {font-weight:normal;}
+.blue {color:#4088b8;}
+.clear {clear:both;}
+.fade {color:#c8c8c8;}
+.gray {color:gray;}
+.photo {background:#fff; border:1px solid #bababa; margin:6px 18px 2px 5px; padding:2px;}
+
+table.tabella1 {
+	/*colore testo titolo menu*/
+	FONT-SIZE: 13px;
+	FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif;
+	background: #ffffff;
+	border-collapse: collapse; 
+	border: #666666 1px solid;
+	margin-bottom: 5px;
+	empty-cells:show;
+}
+
+td.titolomenu {
+	background-image: url(/skins/menu.gif);
+	background-repeat: repeat;
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 15px;
+	HEIGHT: 22px;
+	BORDER-BOTTOM: #666666 1pt solid;
+}
+
+td.menu {
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 15px;
+	HEIGHT: 22px;
+	BORDER-BOTTOM: none;
+	BORDER-top: none;
+}
+.titoloriquadro
+{
+	background-image: url(/skins/riquadro.gif);
+	background-repeat: repeat;
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 12px;
+	HEIGHT: 18px;
+	BORDER-BOTTOM: #666666 1pt solid;
+	padding-left: 3px;
+}
+.div_titolo{
+	background-image: url(/skins/riquadro.gif);
+	background-repeat: repeat;
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 14px;
+	min-HEIGHT: 20px;
+	border: 1px solid #000;
+	border-collapse:collapse;
+	BORDER-BOTTOM: #666666 1pt solid;
+	padding: 2px 3px 2px 3px;
+}
+.div_testo{
+	border: 1px solid #000;
+	border-top:none;
+	border-collapse:collapse;
+	FONT-SIZE: 13px;
+	padding: 2px 2px 2px 2px;
+/*	margin-bottom: 5px;
+*/	}
+	.div_spaziatore{	HEIGHT: 5px;
+}
+.testotabella
+{
+	FONT-SIZE: 13px;
+	padding: 2px 2px 2px 2px;
+}
+.titolobox
+{
+	background-image: url(/skins/riquadro.gif);
+	background-repeat: repeat;
+	FONT-WEIGHT: bold;
+	FONT-SIZE: 10px;
+	HEIGHT: 16px;
+	BORDER-BOTTOM: #666666 1pt solid;
+	padding-left: 2px;
+}
+.corpobox
+{
+	FONT-SIZE: 9px;
+	padding: 2px 2px 2px 2px;
+}
+
+/*Elenco articoli
+*/
+
+#container {
+	/*background: #e3e3e3;*/
+	max-width:850px;
+	width:100%;
+	margin:0 auto;
+	padding: 0px;
+}
+#griglia {  padding: 0;  margin: 0;}
+#griglia a {
+	text-decoration:none;
+	}
+#griglia > li {
+/*	border: 1px solid #333333;
+*/	display: inline-block;
+	width:  245px;
+	margin: 2px;
+	background-color: #fff;
+	vertical-align: top;
+	/*aggiunta per testo sopra*/
+    position: relative;
+    overflow: hidden;
+	text-align:center;
+	margin-bottom:15px;
+-webkit-box-shadow: 8px 8px 16px 0px rgba(61, 52, 50, 0.60);
+-moz-box-shadow:    8px 8px 16px 0px rgba(61, 52, 50, 0.60);
+box-shadow:         8px 8px 16px 0px rgba(61, 52, 50, 0.60);
+-webkit-border-radius: 10px;
+-moz-border-radius: 10px;
+border-radius: 10px;
+
+}
+.articolo {
+/*	border: 1px solid #333333;
+*/    margin: 0;
+	padding-left:3px;
+	padding-top:5px;
+	padding-bottom: 5px;
+	font-size: 12px;
+	color: #000;
+	width: 240px;
+/*	background: #222;
+*/	/* browser che non supportano rgba */
+/*    background: rgb(200,200,200);
+*/	text-align:left;
+
+	z-index:2;
+}
+
+
+
+/*Per messaggio successo in pag_adm_dialog_ordini_aggiungi.asp*/
+.alert-success {
+    color: #3c763d !important;
+    background-color: #dff0d8 !important;
+    border-color: #d6e9c6 !important;
+    background: #dff0d8 !important;
+    
+}
+
+
+/* Foglio comune */
+
+a img {border:0;}
+/*p {margin:0 0 18px 10px;}*/
+ul,ol,dl {font-size:0.9em; margin:2px 0 16px 35px;}
+ul ul,ol ol {margin:4px 0 4px 35px;}
+blockquote {border:1px solid #dadada; font-size:0.9em; margin:20px 10px; padding:8px;}
+blockquote p {margin:0;}
+
+/* Headers */
+h1 {color:#4088b8; font-size:3.6em; letter-spacing:-3px; margin:0 0 20px 25px;}
+h1 a {color:#4088b8; text-transform:none;}
+h2 {border-bottom:4px solid #dadada; color:#4088b8; font-size:1.4em; letter-spacing:-1px; margin:0 0 10px; padding:0 2px 2px 5px;}
+h3 {border-bottom:1px solid #dadada; color:#4088b8; font-size:1.2em; font-weight:700; margin:10px 0 8px; padding:1px 2px 2px 3px;}
+
+/* Main wrap */
+#wrap { background:#FFF; color:#404040; margin:10px auto; padding:0; width:924px;}
+#header {margin:0;}
+#toplinks {font-size:0.9em; padding:5px 2px 2px 3px; text-align:right;}
+#toplinks a {color:gray;}
+#slogan {color:gray; font-size:1.5em; font-weight:700; letter-spacing:-1px;  margin:15px 0 20px 35px;}
+
+/*Sidebar menu*/
+@media print
+{
+#sidebar {display:none;}
+}
+@media screen
+{
+#sidebar {float:left;  margin-top:5px; padding:1px 0 0 0; width:158px; }
+}
+.div_titolo div span{font-size:0.9em;}
+#sidebar ul {font-size:0.9em; list-style:none; margin:0; padding:5px 0 0px 2px;}
+#sidebar li {list-style:none; margin:0 0 8px; padding:0; font-size:1.1em; font-weight:700;}
+#sidebar li a {}
+#sidebar ul ul { margin:4px 0 3px 15px; padding:0;}
+#sidebar ul ul li a {font-weight:400;}
+#sidebar h2 {margin:3px 0 8px;}
+/* Main content 924=(158+4+600+4+158)*/
+#content {float:left;  margin-top:5px ; padding:1px 4px; text-align:left; width:600px;}
+/* Main content large 924=(158+4+762)*/
+#content_large {float:left;  margin-top:5px; padding:1px 0px 0px 4px; text-align:left; width:762px;}
+#contentalt {float:left;  margin-right:20px; padding:0; text-align:left; width:60%;}
+#content h3,#contentalt h3 {margin:10px 0 8px;}
+
+/* Sidebar and menu mio dx */ 
+#sidebarr {float:left;  margin-top:5px; padding: 1px 0 0 0; width:158px; }
+#sidebarr ul {font-size:0.9em; list-style:none; margin:0; padding:0 0 15px 2px;}
+#sidebarr li {list-style:none; margin:0 0 4px; padding:0;}
+#sidebarr li a {font-size:1.0em; font-weight:700;}
+#sidebarr ul ul {margin:4px 0 3px 15px; padding:0;}
+#sidebarr ul ul li a {font-weight:400;}
+#sidebarr h2 {margin:3px 0 8px;} 
+
+
+/* Footer */
+/*#footer {border-top:4px solid #dadada; clear:both; color:gray; font-size:0.9em; line-height:1.6em; margin:0 auto; padding:8px 0; text-align:right;}
+*/#footer {clear:both; color:gray; font-size:0.9em;  margin:0 auto; padding:8px 0; text-align:right;}
+#footer p {margin:0; padding:0;}
+#footer a {color:#808080;}
+
+.Aministra {
+	background-image: url(/skins/menu.gif);
+	background-repeat: repeat;
+	border: 1px solid #000;
+	font-size: 14px;
+	font-weight: bold;
+	color: #000;
+	width: 100%;
+	margin-bottom: 2px;
+	HEIGHT: 22px;
+
+}
+
+A.Aministra_rosso {
+	font-size: 14px;
+	font-weight: bold;
+	TEXT-DECORATION: none;
+	color: #F00;
+}
+A.Amministra_nero {
+		font-size: 14px;
+	font-weight: bold;
+	TEXT-DECORATION: none;
+	color: #000;
+}
+.rosso {color: #F00;}
+.grigio{color:#999 !important;}
+.pull-right{float: right;}
+
+.ui-buttonset > .ui-button {
+/*
+	font-size: 12px !important;
+*/
+	margin-right: -.5em !important;
+}
+/* Stili per oggetti form*/
+input[type=text],input[type=password],input[type=email],input[type=number] {
+  /*background: #F0F0F0;*/
+  border: 1px solid #66CC00; /* Bordo verde*/
+}
+
+input[type=text].richiesto, input[type=password].richiesto ,input[type=email].richiesto,input[type=number].richiesto{
+  border: 1px solid #FF3333; /* Bordo rosso*/
+}
+.richiesto {
+	border: 1px solid #FF3333; /* Bordo rosso*/
+}
+.casella_ricerca {FONT: 12px; width:200px;}
+
+
+textarea {
+  resize:both;
+  background: #F0F0F0;
+  border: 1px solid #66CC00; /* Bordo */
+  overflow: auto; /* disabilitare la scrollbar in IE */
+  margin-right: 10px;
+
+}
+
+
+@media print
+{
+.nostampa {display:none;}
+}
+@media screen
+{
+.nostampa {}
+}
+/*notification-bubble  */
+.notification-bubble {
+    border-radius:16px;
+    padding:4px;
+    font-size:0.7em;
+    color:white;
+    display:inline;
+    width:auto;
+    height:auto;
+    margin-left:5px;
+    margin-top:0px;
+	float:right;
+}
+.badge {
+	/*
+    background:             radial-gradient( 5px -9px, circle, white 8%, red 26px );
+    background:    -moz-radial-gradient( 5px -9px, circle, white 8%, red 26px );
+    background:     -ms-radial-gradient( 5px -9px, circle, white 8%, red 26px );
+    background:      -o-radial-gradient( 5px -9px, circle, white 8%, red 26px );
+    background: -webkit-radial-gradient( 5px -9px, circle, white 8%, red 26px );
+    */
+    background-color: red;
+    border: 2px solid red;
+    border-radius: 12px; /* one half of ( (border * 2) + height + padding ) */
+    /*
+    box-shadow: 1px 1px 1px black;
+    */
+    color: white;
+    font: bold 12px/13px Helvetica, Verdana, Tahoma;
+    height: 16px; 
+    padding: 1px 4px 1px 4px !important;
+    text-align: center;
+    min-width: 14px;
+    margin-left: 2px !important;
+    
+}
+.badge a{ color: inherit; } 
+
+
+/*CSS Validator  per pagine ADMIN*/
+label.error {
+	float: none; color: red; 
+   padding-left: .5em;
+   vertical-align: top; 
+   display: block;
+   width:100%;
+   }
+ input.error {
+	 background-color: #F30;
+   }  
+ input.valid {
+/*	 background-color: #0C3;*/
+   }
+   
+.bg-gray{
+   background-color: rgba(0, 0, 0, 0.19);
+}
+
+
+.ui-autocomplete-loading {
+		background: white url('images/ui-anim_basic_16x16.gif') right center no-repeat;
+	}
+.ui-autocomplete {
+	max-height: 300px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: hidden;
+}
+/* IE 6 doesn't support max-height
+ * we use height instead, but this forces the menu to always be this tall
+ */
+* html .ui-autocomplete {
+	height: 300px;
+}
+.ui-menu-item {
+font-size: 12px;
+}
+.ui-menu {
+	position: absolute;
+	width: 200px;
+	font-size: 8px;
+}
+.soloio{
+	color: gray;
+}
+/*Dipendenti e taglie */
+
+
+#accessori label, #form-dip label {
+	float: left;
+	width: 150px;
+	margin-bottom: 5px;
+	font-weight: bold;
+}
+#accessori input[type="text"] {
+	/*width: 500px;*/
+	margin-bottom: 5px;
+}
+
+.donna{
+	color: #f74ca5;
+}
+/*tabella rilievo taglie */
+#form_misura input.taglie[type="text"] {
+	width: 60px;
+	margin-bottom: 5px;
+	text-align: center;
+}
+#accessori input[type="radio"] {
+	width: 30px;
+	margin-bottom: 5px;
+	margin-right: 10px;
+}
+#accessori input[type="checkbox"] {
+	margin-bottom: 5px;
+	margin-left: 20px;
+}
+
+#accessori textarea {
+	width: 550px;
+	height: 50px;
+	margin-bottom: 5px;
+}
+#accessori br, #form-dip br {
+	clear: left;
+}
+.option{
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+.green{
+	background-color: #99FF99;
+	margin-left: 2px;
+}
+.cella-misura{
+	border-left: 1px solid black;
+	text-align: center;
+	white-space: nowrap;
+}
+.cella-misura-head{
+	border-left: 1px solid black;
+	text-align: center;
+	border-bottom: 1px solid black;
+	border-top: 1px solid black;
+
+} 
+#titolo-top{
+	width: 100%;
+	font-weight: bold;
+	text-align: center;
+}  
+
+
+.autogrow{
+	resize: none;
+	width: 98%;
+}
+/* nota in elenco articoli ordine*/
+.notaarticolo{
+	display: block;
+	width: 100%;
+	background-color: #ffff3a;
+	font-weight: bold;
+	color: #ff4f4f;
+}
+#file-dropzone{
+	width: 600px;
+	height: 300px;
+}
+
+.ui-icon-gear {
+  -ms-transform: scale(1.5); /* IE 9 */
+  -webkit-transform: scale(1.5); /* Chrome, Safari, Opera */
+  transform: scale(1.5);
+  margin-right: 5px;
+}
+
+
+
+
+/*Tabella ordini */
+.mieidettagli {
+	display: none;
+}
+
+
+
+/*stati note*/
+@media screen {
+	
+	.stato-nota-1{
+		background-color: #0eff00 !important;
+		}
+	.stato-nota-5{
+		background-color: #f8c200 !important;
+		}
+	.stato-nota-9{
+		background-color: #297bff !important;
+		}
+	
+}	
+	
+	
+	
+@media print {
+	.stato-nota-1{
+	    background-color: #a6ffa2 !important;
+	}
+	.stato-nota-5{
+		background-color: #f6de88 !important;
+	}
+	.stato-nota-9{
+		background-color: #9dc2ff !important;
+	}
+
+
+
+}
+

@@ -1,0 +1,2 @@
+Logo.png	238x76 	72dpi
+Logo@2x.png	476x152	72dpi

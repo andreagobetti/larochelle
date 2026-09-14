@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><!--#include virtual="/pag_adm_ordini_inc.asp" --><html><body><%Set metodipagamento = New ClasseMetodipagamento 'Create an Instance of the Classcall metodipagamento.stampa_option(1)call metodipagamento.genera_scadenze(0,0,0,date(),1000,28)%></body>

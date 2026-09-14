@@ -1,0 +1,99 @@
+/*cella tabella elenco ordini*/
+.stato_2{
+	background-color: #f8c200 !important;
+}
+.stato_3{
+	background-color: #0eff00 !important;
+}
+.stato_4{
+	background-color: #268866 !important;
+}
+.stato_5{
+	background-color: #00ccff !important;
+}
+.stato_6{
+	background-color: #0067ff !important;
+}
+
+/*cella tabella elenco preventivi*/
+
+
+.statop_2{
+	background-color: #f8c200 !important;
+}
+
+
+.statop_5{
+	background-color: #fa2e46 !important;
+}
+.statop_6{
+	background-color: #0eff00 !important;
+}
+
+
+
+/*casella quantita in dettaglio spettanze*/
+.in_ordine{
+	width: 30px;
+	font-size: 10px !important;
+	border-color: #f8c200 !important;
+	margin-right: 2px;
+	}
+.pronto{
+	width: 30px;
+	font-size: 10px !important ;
+	border-color: #0eff00 !important;
+	margin-right: 2px;
+	}
+.consegna{
+	width: 30px;
+	font-size: 10px !important;
+	border-color: #297bff !important;
+
+	}
+.nuovo_rilievo{
+	background: #d699ff;
+	}
+.nuovo_rilievo_bottoni{
+	background: #f9d0a6;
+	}
+/*testi in dettaglio spettanze*/
+
+
+@media screen {
+	.in_ordines{
+		background-color: #f8c200 !important;
+		}
+
+	.prontos{
+		background-color: #0eff00 !important;
+		}
+
+	.consegnatos{
+		background-color: #297bff !important;
+		}
+
+}
+
+
+
+@media print {
+	.in_ordines{
+
+		background-color: #f6de88 !important;
+	}
+    .prontos {
+	    background-color: #a6ffa2 !important;
+	}
+	.consegnatos{
+		background-color: #9dc2ff !important;
+	}
+
+
+
+}
+
+
+ body {
+    -webkit-print-color-adjust: exact;
+}

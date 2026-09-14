@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><!--#include file="jsonObject.class.asp"--><!--#include virtual="/ClasseOrdine.asp" --><%	'conn.BeginTrans	Set rs = Server.CreateObject("ADODB.Recordset")rs.open "utenti", conn,3,3rs.addnewrs("nome")="prova"&time()rs.updaters.Close'conn.CommitTrans'transError:'conn.RollbackTrans	%>

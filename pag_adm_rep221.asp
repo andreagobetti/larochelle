@@ -1,0 +1,132 @@
+<!--#include virtual="/setup.asp" -->
+<!--#include virtual="/pag_adm_ordini_inc.asp" -->
+<%
+if session("idadmin") = "" then call login()
+
+mese=request.form("mese")
+if mese="" then
+	mese=month(date())
+	anno=year(date())
+else
+	anno=request.form("anno")
+	anno=year(date())
+end if
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title><%=application("brwstitle")%></title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+<!--#include virtual="/sub_head.asp" -->
+    <link class="include" rel="stylesheet" type="text/css" href="jquery/css/jquery.jqplot.min.css" />
+    <!--[if lt IE 9]><script language="javascript" type="text/javascript" src="jquery/js/excanvas.min.js"></script><![endif]-->
+</head>
+<body> 
+<div id="wrap">
+<div id="header">
+<%=titolo_top%>
+        <!-- Div Content INIZIO-->      <%barra=0%><div id="barra_fissa">
+	  <!--#include virtual="/sub_barra_adminsf2.asp" -->
+<%
+	conn.close
+	dbpath=server.MapPath("\mdb-database\server_start.mdb")
+	mdb="Provider=Microsoft.Jet.OLEDB.4.0; Data Source= " & dbpath
+
+	conn.Open mdb
+
+
+%>
+        <div class="ui-widget-header ui-corner-all titolo_admin"><form name="form1" method="post" action="<%=questofile%>"><a href="<%=questofile%>">Riavii del server</a> <select name="MESE" onChange="this.form.submit();" >
+                <%
+for n=1 to nome_mese(0)
+response.write "<option value='"&n&"'"
+if n=cint(mese) then response.write " selected"
+response.write  ">" & nome_mese(n)&"</option>"
+next
+%>
+              </select></form></div>    </div>       
+
+<%
+
+'creo s1
+asse_X=""
+asse_Y=""
+
+
+sql1="select Format(data,'dd/mm/yyyy') AS Giorno, Month(data) AS mese, Count(log.Idlog) AS Riavii, Year(data) AS anno FROM log GROUP BY Format(data,'dd/mm/yyyy'), Month(data), Year(data) HAVING (((Month(data))="&mese&") AND ((Year(data))="&anno&")) "
+set rs=conn.execute(Sql1)
+do while not rs.eof
+	if asse_X<>"" then asse_X=asse_X&"," 'aggiungo la virgola
+	if asse_Y<>"" then asse_Y=asse_Y&"," 'aggiungo la virgola
+	asse_X=asse_X&"'"&day(rs("giorno"))&"/"&month(rs("giorno"))&"'"
+	asse_Y=asse_Y&int(rs("Riavii"))
+	rs.movenext
+loop
+
+
+%>
+    <div id="chart1" style="margin-top:10px; margin-left:20px; width:95%; height:400px;"></div>
+
+
+
+      <script class="code" type="text/javascript">
+$(document).ready(function(){
+    var s1 = [<%=asse_y%>];
+    // Can specify a custom tick Array.
+    // Ticks should match up one for each y value (category) in the series.
+    var ticks = [<%=asse_X%>];
+     
+    var plot1 = $.jqplot('chart1', [s1], {
+        // The "seriesDefaults" option is an options object that will
+        // be applied to all series in the chart.
+        seriesDefaults:{
+            renderer:$.jqplot.BarRenderer,
+            rendererOptions: {fillToZero: true}
+        },
+        // Custom labels for the series are specified with the "label"
+        // option on the series option.  Here a series option object
+        // is specified for each series.
+        series:[
+            {label:'Riavvii giornalieri del server'}
+        ],
+        // Show the legend and put it outside the grid, but inside the
+        // plot container, shrinking the grid to accomodate the legend.
+        // A value of "outside" would not shrink the grid and allow
+        // the legend to overflow the container.
+        legend: {
+            show: true,
+            //placement: 'outsideGrid'
+			placement: 'insideGrid'
+
+        },
+        axes: {
+            // Use a category axis on the x axis and use our custom ticks.
+            xaxis: {
+                renderer: $.jqplot.CategoryAxisRenderer,
+                ticks: ticks
+            },
+            // Pad the y axis just a little so bars can get close to, but
+            // not touch, the grid boundaries.  1.2 is the default padding.
+            yaxis: {
+                pad: 1.05,
+                tickOptions: {formatString: '%d'}
+            }
+        }
+    });
+});
+
+      </script>
+      <script class="include" type="text/javascript" src="jquery/js/jquery.jqplot.min.js"></script>
+      <script type="text/javascript" src="jquery/js/jqplot.plugins/jqplot.barRenderer.min.js"></script>
+      <script type="text/javascript" src="jquery/js/jqplot.plugins/jqplot.categoryAxisRenderer.min.js"></script>
+      <script type="text/javascript" src="jquery/js/jqplot.plugins/jqplot.pointLabels.min.js"></script>
+
+      <script class="include" type="text/javascript" src="jquery/js/jqplot.plugins/jqplot.pieRenderer.min.js"></script>
+
+</div>
+<div id="footer"></div><!--#include virtual="/pag_adm_footer_inc.asp" --></div>
+</body>
+</html>
+<%
+rsClose
+%>

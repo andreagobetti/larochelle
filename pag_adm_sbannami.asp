@@ -1,0 +1,1 @@
+<%	Application("ip_bannati")=""	ip=Request.ServerVariables("REMOTE_ADDR")	response.redirect "pag_adm_ipbannati.asp?modifica="&ip%>

@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><!--#include file="jsonObject.class.asp"--><!--#include virtual="/ClasseOrdine.asp" --><!--#include virtual="/pag_adm_ordini_inc.asp" --><%		codiceunivoco="aaa:bbb"	Response.write left(codiceunivoco,inStr(codiceunivoco,":")-1)	%>

@@ -1,0 +1,1 @@
+<!--#include virtual="/config/mdb.asp" --><%aLMatrice = Application.Contents(i)Application.LockFor I=1 to Application.Contents.Count    Application.Contents(i)=""NextApplication("ConfigOk")="Reset"Application.UnLockresponse.Redirect("/")%>

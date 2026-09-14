@@ -1,0 +1,92 @@
+
+    th, .footer {
+        position: relative;
+        border: 1px solid black;
+    }
+
+    th span {
+        transform-origin: 0 50%;
+        transform: rotate(-90deg);
+        transform: rotate(-90deg);
+        -webkit-transform: rotate(-90deg); /* Safari/Chrome */
+        -moz-transform: rotate(-90deg); /* Firefox */
+        -o-transform: rotate(-90deg); /* Opera */
+        -ms-transform: rotate(-90deg); /* IE 9 */
+        -ms-transform-origin: 0 50%; /* IE 9 */
+        -webkit-transform-origin: 0 50%; /* Chrome, Safari, Opera */
+
+        white-space: nowrap;
+        display: block;
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+    }
+
+    .footer span {
+        transform-origin: 50% 200%;
+        transform: rotate(-90deg);
+        transform: rotate(-90deg);
+        -webkit-transform: rotate(-90deg); /* Safari/Chrome */
+        -moz-transform: rotate(-90deg); /* Firefox */
+        -o-transform: rotate(-90deg); /* Opera */
+        -ms-transform: rotate(-90deg); /* IE 9 */
+        -ms-transform-origin: 50% 200%; /* IE 9 */
+        -webkit-transform-origin: 50% 200%; /* Chrome, Safari, Opera */
+
+        white-space: nowrap;
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 50%;
+    }
+
+    tr {
+        border-bottom: 1px solid;
+    }
+
+    #spettanze td {
+        border: 1px solid black;
+    }
+
+    .spett {
+        text-align: center;
+        width: 25px;
+        font-size: small;
+    }
+
+    .dipendenti, .dipendentiw {
+        width: 25px;
+        font-size: smaller;
+
+    }
+
+    .colora_cella {
+        background: #dfff26 !important;
+    }
+
+    .articoli {
+        font-size: small;
+        min-width: 200px;
+    }
+
+    .minimizza {
+        padding: 0px !important;
+
+    }
+
+    .zindex500 {
+        z-index: 500;
+    }
+
+    .totali {
+        background: #ffffff;
+    }
+
+    .quantita {
+        text-align: center;
+    }
+
+    .totalidipendenti {
+        background: #ffffff;
+        /*font-size: small;*/
+    }

@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><%		id_tipo_allegato=request("id_tipo_allegato")	tipo_allegato=request("tipo_allegato")		%>	<!--#include virtual="/sub_allegati.asp" -->

@@ -1,0 +1,1 @@
+<!--#include virtual="/setup.asp" --><%			call riordina_sql("prodotti_spettanze"," where iduser=705")%>

@@ -1,0 +1,1 @@
+<%const conf_telefono1=""const conf_telefono2=""const conf_skype=""const conf_email="email"const nome_sito=""const descrizione_sito="Sito di test"sub livezilla()%><%if false then%><%end ifend sub%>	

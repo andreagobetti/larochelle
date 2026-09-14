@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html class="ie8"> <![endif]-->
+<!--[if IE 9]> <html class="ie9"> <![endif]-->
+<!--[if !IE]><!--> <html> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <title>Sito in manutenzione</title>
+        <meta name="description" content="">
+        <!--[if IE]> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <![endif]-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link href='//fonts.googleapis.com/css?family=PT+Sans:400,700,400italic,700italic%7CPT+Gudea:400,700,400italic%7CPT+Oswald:400,700,300' rel='stylesheet' id="googlefont">
+        
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <link rel="stylesheet" href="css/prettyPhoto.css">
+        <link rel="stylesheet" href="css/owl.carousel.css">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/responsive.css">
+        
+        <!-- Favicon and Apple Icons -->
+        <link rel="icon" type="image/png" href="images/icons/icon.png">
+        <link rel="apple-touch-icon" sizes="57x57" href="images/icons/apple-icon-57x57.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="images/icons/apple-icon-72x72.png">
+        
+        <!--- jQuery -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/jquery-1.11.1.min.js"><\/script>')</script>
+
+		<!--[if lt IE 9]>
+			<script src="js/html5shiv.js"></script>
+			<script src="js/respond.min.js"></script>
+		<![endif]-->
+	    
+		<style id="custom-style">
+		
+		</style>
+    </head>
+    <body>
+    <div id="wrapper">
+    	<header id="header">
+    	</header><!-- End #header -->
+
+        <section id="content" class="no-content">
+        	<div class="lg-margin"></div><!-- Space -->
+        	<div class="container">
+        		<div class="row">
+        			<div class="col-md-12">
+        				<div class="no-content-comment">
+                            <h2>Ops...</h2>
+                            <h3>Sito in manutenzione, saremo on-line tra qualche minuto</h3>
+                        </div><!-- End .no-content-comment -->
+        			</div><!-- End .col-md-12 -->
+        		</div><!-- End .row -->
+			</div><!-- End .container -->
+        
+        </section><!-- End #content -->
+        <footer id="footer">
+            
+            
+        </footer><!-- End #footer -->
+    </div><!-- End #wrapper -->
+        <a href="#" id="scroll-top" title="Scroll to Top"><i class="fa fa-angle-up"></i></a><!-- End #scroll-top -->
+    <!-- END -->
+	<script src="js/bootstrap.min.js"></script>
+    <script src="js/smoothscroll.js"></script>
+	<script src="js/jquery.debouncedresize.js"></script>
+    <script src="js/retina.min.js"></script>
+    <script src="js/jquery.placeholder.js"></script>
+    <script src="js/jquery.hoverIntent.min.js"></script>
+	<script src="js/twitter/jquery.tweet.min.js"></script>
+	<script src="js/jquery.flexslider-min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+	<script src="js/jflickrfeed.min.js"></script>
+	<script src="js/jquery.prettyPhoto.js"></script>
+	<script src="js/main.js"></script>
+	
+    <script>
+    	$(function() {
+
+            // Simple Animation for 404 text
+
+                var container = $('.no-content-comment'),
+                    title = container.find('h2'),
+                    titleText = title.text(),
+                    message = container.find('h3'),
+                    messageText = message.text(),
+                    titleTextLen = titleText.length,
+                    messageTextLen = messageText.length,
+                    titleNew = '',
+                    messageNew = '',
+                    time = 50;
+
+               
+               function iterate(len, text, newVar, target) {
+                    for (var i=0 ; i < len; i++) {
+                        if (text[i] == '!') { // ! important for line breaks
+                            newVar += '<span>'+text[i]+'<br></span>' 
+                        } else {
+                            newVar += '<span>'+text[i]+'</span>';
+                        }
+                   }
+                   target.html(newVar);
+               }
+
+
+               iterate(titleTextLen, titleText, titleNew, title);
+
+               iterate(messageTextLen, messageText, messageNew, message);
+
+
+            $(window).on('load', function () {
+                
+                container.find('span').each(function () {
+                    time +=80;
+                    $(this).delay(200).animate({opacity: 1}, time);
+                });
+                
+            });
+            
+    	
+    	});
+    </script>
+    </body>
+</html>

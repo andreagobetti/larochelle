@@ -1,0 +1,23 @@
+<%
+const PA_IdTrasmittente_IdPaese="IT"
+const PA_IdTrasmittente_IdCodice="12885200019"  'codice fiscale
+const PA_FormatoTrasmissione="SDI10"
+const PA_ContattiTrasmittente_Telefono="0124 32307"
+const PA_ContattiTrasmittente_Email="ilariapistono@larochelle.it"
+const PA_DatiAnagrafici_IdFiscaleIVA_IdPaese="IT"
+const PA_DatiAnagrafici_IdFiscaleIVA_IdCodice="12885200019"
+const PA_DatiAnagrafici_CodiceFiscale="12885200019"
+const PA_DatiAnagrafici_Anagrafica_Denominazione="La Rochelle di Pistono Ilaria & C. snc"
+const PA_DatiAnagrafici_RegimeFiscale="RF01"
+'const DatiAnagrafici_Anagrafica_Nome=""
+'const DatiAnagrafici_Anagrafica_Cognome=""
+const PA_DatiAnagrafici_Sede_Indirizzo="Via Paschetto"
+const PA_DatiAnagrafici_Sede_NumeroCivico="46"
+const PA_DatiAnagrafici_Sede_CAP="10090"
+const PA_DatiAnagrafici_Sede_Comune="San Giorgio Canavese"
+const PA_DatiAnagrafici_Sede_Provincia="TO"
+const PA_DatiAnagrafici_Sedea_Nazione="IT"
+const PA_DatiAnagrafici_Contatti_Telefono="0124 32307"
+const PA_DatiAnagrafici_Contatti_Email="ilariapistono@larochelle.it"
+const PA_DatiPagamento_DettaglioPagamento_IBAN="IT32M0200830910000110059473"
+%>
