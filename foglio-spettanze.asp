@@ -388,11 +388,15 @@ testocella=quantita
 									</tfoot>
 									<%end if %>
 									</table>
-							<%if session("iduser")=iduser and disabled=""  then %>
+						<%if session("iduser")=iduser and disabled=""  then %>
 							<div class="row" style="text-align: center;">
 									<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="margin-top:3px; margin-bottom:3px;">
+									<%if (boolcompleto <> true) then %>
+										<a href="pdf-foglio-spettanze.asp?idfoglio=<%=idfoglio%>&isbozza=1" class="btn btn-custom">Scarica BOZZA PDF</a> 
+									<%end if %>
+									<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="position:fixed;bottom:15px;left:15px;z-index:9999;">
 							</div><!-- row -->
-							<%end if %>
+						<%end if %>
 						<%if session("vedi_prezzi")=1 or utente_admin then %>
 							<table style="width:100%; margin-top: 10px;">
 											<%
