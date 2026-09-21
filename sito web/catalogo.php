@@ -211,6 +211,139 @@ function rewriteUrl(
 
 /*
  * ============================================================================
+ * COOKIE
+ * ============================================================================
+ */
+
+/**
+ * Converte l'header Set-Cookie remoto in cookie da restituire al browser.
+ *
+ * Vengono rimossi Domain, Path, Secure, HttpOnly e SameSite del server
+ * remoto perché il cookie deve appartenere al proxy.
+ */
+function rewriteSetCookieForProxy(
+    string $setCookie
+): string {
+
+    $parts = preg_split(
+        '/;\s*/',
+        $setCookie
+    );
+
+    if (!$parts || empty($parts[0])) {
+        return $setCookie;
+    }
+
+    $result = [
+        $parts[0]
+    ];
+
+    foreach (
+        array_slice($parts, 1)
+        as $part
+    ) {
+
+        $lower = strtolower(
+            trim($part)
+        );
+
+        /*
+         * Il dominio remoto non deve essere mantenuto.
+         */
+        if (str_starts_with(
+            $lower,
+            'domain='
+        )) {
+            continue;
+        }
+
+        /*
+         * Il proxy deve poter utilizzare il cookie su tutte le sue URL.
+         */
+        if (str_starts_with(
+            $lower,
+            'path='
+        )) {
+            continue;
+        }
+
+        /*
+         * Il cookie viene inviato anche in HTTP se il proxy viene usato
+         * in HTTP.
+         */
+        if ($lower === 'secure') {
+            continue;
+        }
+
+        /*
+         * Evita problemi di policy del browser.
+         */
+        if (str_starts_with(
+            $lower,
+            'samesite='
+        )) {
+            continue;
+        }
+
+        /*
+         * HttpOnly può essere mantenuto.
+         */
+        $result[] = $part;
+    }
+
+    /*
+     * Il cookie deve valere per il proxy.
+     */
+    $result[] = 'Path=/';
+
+    return implode(
+        '; ',
+        $result
+    );
+}
+
+
+/**
+ * Estrae tutti i cookie ricevuti dal server remoto.
+ */
+function extractSetCookies(
+    array $headers
+): array {
+
+    $cookies = [];
+
+    foreach ($headers as $header) {
+
+        if (
+            stripos(
+                $header,
+                'Set-Cookie:'
+            ) !== 0
+        ) {
+            continue;
+        }
+
+        $value = trim(
+            substr(
+                $header,
+                strlen('Set-Cookie:')
+            )
+        );
+
+        if ($value !== '') {
+            $cookies[] =
+                rewriteSetCookieForProxy(
+                    $value
+                );
+        }
+    }
+
+    return $cookies;
+}
+
+
+/*
+ * ============================================================================
  * DOWNLOAD / PROXY DELLA RISORSA
  * ============================================================================
  */
@@ -218,21 +351,75 @@ function rewriteUrl(
 /**
  * Scarica la risorsa remota.
  *
- * Per POST ricostruisce il body a partire da $_POST.
+ * $followRedirects:
+ *     true  = cURL segue i redirect.
+ *     false = il redirect viene restituito al proxy.
  */
 function fetchRemote(
     string $url,
     string $method,
-    array $postData
+    array $getData,
+    array $postData,
+    bool $followRedirects
 ): array {
 
+    /*
+     * ------------------------------------------------------------------------
+     * QUERY STRING
+     * ------------------------------------------------------------------------
+     *
+     * "url" è il parametro interno del proxy.
+     *
+     * Tutti gli altri parametri GET vengono inoltrati al server remoto.
+     */
+
+    if (
+        $method === 'GET' &&
+        !empty($getData)
+    ) {
+
+        $remoteGetData = $getData;
+
+        unset(
+            $remoteGetData['url']
+        );
+
+        if (!empty($remoteGetData)) {
+
+            $query = http_build_query(
+                $remoteGetData,
+                '',
+                '&',
+                PHP_QUERY_RFC3986
+            );
+
+            if ($query !== '') {
+
+                $separator =
+                    str_contains($url, '?')
+                    ? '&'
+                    : '?';
+
+                $url .=
+                    $separator .
+                    $query;
+            }
+        }
+    }
+
+
+    $responseHeaders = [];
+
+
     $ch = curl_init($url);
+
 
     $options = [
 
         CURLOPT_RETURNTRANSFER => true,
 
-        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_FOLLOWLOCATION =>
+            $followRedirects,
 
         CURLOPT_MAXREDIRS => 5,
 
@@ -248,7 +435,53 @@ function fetchRemote(
         CURLOPT_HTTPHEADER => [
             'Accept: */*',
         ],
+
+        /*
+         * Riceve gli header HTTP.
+         */
+        CURLOPT_HEADERFUNCTION =>
+            function (
+                $curl,
+                string $header
+            ) use (
+                &$responseHeaders
+            ) {
+
+                $responseHeaders[] =
+                    rtrim($header, "\r\n");
+
+                return strlen($header);
+            },
     ];
+
+
+    /*
+     * ------------------------------------------------------------------------
+     * COOKIE DAL BROWSER
+     * ------------------------------------------------------------------------
+     */
+
+    if (!empty($_COOKIE)) {
+
+        $cookiePairs = [];
+
+        foreach (
+            $_COOKIE as $name => $value
+        ) {
+
+            $cookiePairs[] =
+                $name . '=' . $value;
+        }
+
+        if (!empty($cookiePairs)) {
+
+            $options[CURLOPT_COOKIE] =
+                implode(
+                    '; ',
+                    $cookiePairs
+                );
+        }
+    }
 
 
     /*
@@ -261,14 +494,13 @@ function fetchRemote(
 
         $options[CURLOPT_POST] = true;
 
-        /*
-         * Ricostruisce il POST a partire da $_POST.
-         */
-        $options[CURLOPT_POSTFIELDS] = http_build_query(
-            $postData,
-            '',
-            '&'
-        );
+        $options[CURLOPT_POSTFIELDS] =
+            http_build_query(
+                $postData,
+                '',
+                '&',
+                PHP_QUERY_RFC3986
+            );
 
         $options[CURLOPT_HTTPHEADER][] =
             'Content-Type: application/x-www-form-urlencoded';
@@ -295,6 +527,7 @@ function fetchRemote(
 
     $body = curl_exec($ch);
 
+
     if ($body === false) {
 
         $error = curl_error($ch);
@@ -313,14 +546,26 @@ function fetchRemote(
         CURLINFO_HTTP_CODE
     );
 
+
     $contentType = curl_getinfo(
         $ch,
         CURLINFO_CONTENT_TYPE
     );
 
+
     $finalUrl = curl_getinfo(
         $ch,
         CURLINFO_EFFECTIVE_URL
+    );
+
+
+    /*
+     * Se FOLLOWLOCATION è false, CURLINFO_REDIRECT_URL
+     * contiene l'URL del redirect.
+     */
+    $redirectUrl = curl_getinfo(
+        $ch,
+        CURLINFO_REDIRECT_URL
     );
 
 
@@ -339,6 +584,12 @@ function fetchRemote(
         'finalUrl' =>
             $finalUrl ?: $url,
 
+        'redirectUrl' =>
+            $redirectUrl ?: '',
+
+        'headers' =>
+            $responseHeaders,
+
         'body' => $body,
     ];
 }
@@ -352,6 +603,7 @@ function fetchRemote(
 
 $url = $_GET['url'] ?? '';
 
+
 if ($url === '') {
     $url = $defaultUrl;
 }
@@ -360,7 +612,9 @@ if ($url === '') {
 /*
  * Decodifica il parametro.
  */
-$url = urldecode($url);
+$url = urldecode(
+    $url
+);
 
 
 /*
@@ -396,7 +650,26 @@ $method = strtoupper(
 
 
 /*
- * Ricostruzione del POST esclusivamente da $_POST.
+ * ============================================================================
+ * RICHIESTA PRINCIPALE VS RISORSA
+ * ============================================================================
+ *
+ * Per la richiesta principale vogliamo intercettare i redirect del server
+ * remoto e restituirli al browser.
+ *
+ * Per le risorse secondarie possiamo invece seguire normalmente i redirect.
+ *
+ * Nel nostro caso consideriamo richiesta principale una richiesta HTML
+ * effettuata tramite catalogo.php senza il parametro interno "resource".
+ */
+
+$isMainRequest =
+    !isset($_GET['resource']) ||
+    $_GET['resource'] !== '1';
+
+
+/*
+ * POST originale.
  */
 $postData = $_POST;
 
@@ -410,7 +683,9 @@ $postData = $_POST;
 $response = fetchRemote(
     $url,
     $method,
-    $postData
+    $_GET,
+    $postData,
+    !$isMainRequest
 );
 
 
@@ -431,6 +706,135 @@ if (!$response['success']) {
 
 /*
  * ============================================================================
+ * GESTIONE REDIRECT DELLA PAGINA PRINCIPALE
+ * ============================================================================
+ */
+
+if (
+    $isMainRequest &&
+    in_array(
+        $response['status'],
+        [301, 302, 303, 307, 308],
+        true
+    )
+) {
+
+    $redirectUrl =
+        $response['redirectUrl'];
+
+
+    /*
+     * Se CURLINFO_REDIRECT_URL non è disponibile,
+     * proviamo a ricavare Location dagli header.
+     */
+    if ($redirectUrl === '') {
+
+        foreach (
+            $response['headers']
+            as $header
+        ) {
+
+            if (
+                stripos(
+                    $header,
+                    'Location:'
+                ) === 0
+            ) {
+
+                $redirectUrl = trim(
+                    substr(
+                        $header,
+                        strlen('Location:')
+                    )
+                );
+
+                break;
+            }
+        }
+    }
+
+
+    if ($redirectUrl !== '') {
+
+        /*
+         * Il Location può essere relativo.
+         */
+        $redirectUrl = absoluteUrl(
+            $redirectUrl,
+            $url
+        );
+
+
+        /*
+         * Sicurezza:
+         * il redirect deve rimanere sul dominio autorizzato.
+         */
+        if (!isAllowedUrl(
+            $redirectUrl,
+            $allowedHost
+        )) {
+
+            http_response_code(502);
+
+            header(
+                'Content-Type: text/plain; charset=UTF-8'
+            );
+
+            exit(
+                'Redirect verso dominio non autorizzato.'
+            );
+        }
+
+
+        /*
+         * Salva eventuali cookie restituiti dal server remoto.
+         */
+        $setCookies =
+            extractSetCookies(
+                $response['headers']
+            );
+
+        foreach (
+            $setCookies as $cookie
+        ) {
+
+            header(
+                'Set-Cookie: ' . $cookie,
+                false
+            );
+        }
+
+
+        /*
+         * Trasforma il Location remoto in URL del proxy.
+         */
+        $proxyRedirect =
+            proxyUrl($redirectUrl);
+
+
+        /*
+         * Per un 303 il browser deve effettuare GET.
+         *
+         * Per gli altri status manteniamo il codice originale.
+         */
+        http_response_code(
+            $response['status']
+        );
+
+
+        header(
+            'Location: ' .
+            $proxyRedirect
+        );
+
+
+        exit;
+    }
+}
+
+
+/*
+ * ============================================================================
  * STATUS HTTP
  * ============================================================================
  */
@@ -444,13 +848,17 @@ if (
         $response['status'] ?: 502
     );
 
-    if ($response['contentType'] !== '') {
+
+    if (
+        $response['contentType'] !== ''
+    ) {
 
         header(
             'Content-Type: ' .
             $response['contentType']
         );
     }
+
 
     echo $response['body'];
 
@@ -472,6 +880,28 @@ $finalUrl =
 
 $body =
     $response['body'];
+
+
+/*
+ * ============================================================================
+ * COOKIE DELLA RISPOSTA REMOTA
+ * ============================================================================
+ */
+
+$setCookies =
+    extractSetCookies(
+        $response['headers']
+    );
+
+foreach (
+    $setCookies as $cookie
+) {
+
+    header(
+        'Set-Cookie: ' . $cookie,
+        false
+    );
+}
 
 
 /*
@@ -636,29 +1066,17 @@ if (
 
         '//header',
 
-        /*
-         * Rimuove i span il cui ID contiene
-         * "prodotto_lblDescPrezzoListino".
-         */
-        '//span[contains(@id, "prodotto_lblDescPrezzoListino")]',
+        '//span[contains(@id, "prodotto_lblDescPrezzoListino")]', 
 
-
-        /*
-         * Rimuove i span il cui ID contiene
-         * "prodotto_lblPrezzoListino".
-         */
         '//span[contains(@id, "prodotto_lblPrezzoListino")]', 
 
-        /*
-         * Rimuove i span il cui ID contiene
-         * "ctl00_cphGeneralMasterPage_griglia_ctl01_lblErrore".
-         */
         '//span[contains(@id, "ctl00_cphGeneralMasterPage_griglia_ctl01_lblErrore")]', 
-      
-
     ];
 
-    foreach ($selectors as $selector) {
+
+    foreach (
+        $selectors as $selector
+    ) {
 
         foreach (
             $xpath->query($selector)
@@ -705,19 +1123,26 @@ if (
      * ------------------------------------------------------------------------
      * FORM <form action="">
      * ------------------------------------------------------------------------
+     *
+     * Se action è vuoto, il browser utilizza normalmente l'URL corrente.
+     *
+     * In quel caso usiamo $finalUrl.
      */
 
     foreach (
-        $xpath->query('//form[@action]')
+        $xpath->query('//form')
         as $form
     ) {
 
         $action = trim(
-            $form->getAttribute('action')
+            $form->getAttribute(
+                'action'
+            )
         );
 
         if ($action === '') {
-            continue;
+
+            $action = $finalUrl;
         }
 
         $form->setAttribute(
@@ -740,11 +1165,6 @@ if (
      * ------------------------------------------------------------------------
      * formaction
      * ------------------------------------------------------------------------
-     *
-     * Gestisce:
-     *
-     * <button formaction="...">
-     * <input formaction="...">
      */
 
     foreach (
@@ -782,18 +1202,6 @@ if (
      * ------------------------------------------------------------------------
      * TUTTI GLI ELEMENTI CON src
      * ------------------------------------------------------------------------
-     *
-     * Comprende automaticamente:
-     *
-     * <img src="">
-     * <script src="">
-     * <iframe src="">
-     * <video src="">
-     * <audio src="">
-     * <source src="">
-     * <embed src="">
-     * <input type="image" src="">
-     * ecc.
      */
 
     foreach (
@@ -829,8 +1237,6 @@ if (
      * ------------------------------------------------------------------------
      * LINK <link href="">
      * ------------------------------------------------------------------------
-     *
-     * CSS, favicon, preload, ecc.
      */
 
     foreach (
@@ -873,20 +1279,27 @@ if (
         as $node
     ) {
 
-        $srcset = $node->getAttribute(
-            'srcset'
-        );
+        $srcset =
+            $node->getAttribute(
+                'srcset'
+            );
 
-        $items = explode(
-            ',',
-            $srcset
-        );
+        $items =
+            explode(
+                ',',
+                $srcset
+            );
 
         $newItems = [];
 
-        foreach ($items as $item) {
 
-            $item = trim($item);
+        foreach (
+            $items as $item
+        ) {
+
+            $item = trim(
+                $item
+            );
 
             if ($item === '') {
                 continue;
@@ -904,14 +1317,17 @@ if (
             $descriptor =
                 $parts[1] ?? '';
 
-            $resource = rewriteUrl(
 
-                $resource,
+            $resource =
+                rewriteUrl(
 
-                $finalUrl,
+                    $resource,
 
-                $allowedHost
-            );
+                    $finalUrl,
+
+                    $allowedHost
+                );
+
 
             $newItems[] =
                 $resource .
@@ -921,6 +1337,7 @@ if (
                     : ''
                 );
         }
+
 
         $node->setAttribute(
 
@@ -945,58 +1362,68 @@ if (
         as $node
     ) {
 
-        $style = $node->getAttribute(
-            'style'
-        );
+        $style =
+            $node->getAttribute(
+                'style'
+            );
 
-        $style = preg_replace_callback(
 
-            '~url\(\s*([\'"]?)(.*?)\1\s*\)~i',
+        $style =
+            preg_replace_callback(
 
-            function (array $match)
-                use (
-                    $finalUrl,
-                    $allowedHost
-                ) {
+                '~url\(\s*([\'"]?)(.*?)\1\s*\)~i',
 
-                    $quote =
-                        $match[1];
-
-                    $resource =
-                        trim($match[2]);
-
-                    if (
-                        $resource === '' ||
-                        preg_match(
-                            '~^(data|blob|javascript):~i',
-                            $resource
-                        )
-                    ) {
-                        return $match[0];
-                    }
-
-                    $absolute =
-                        absoluteUrl(
-                            $resource,
-                            $finalUrl
-                        );
-
-                    if (!isAllowedUrl(
-                        $absolute,
+                function (array $match)
+                    use (
+                        $finalUrl,
                         $allowedHost
-                    )) {
-                        return $match[0];
-                    }
+                    ) {
 
-                    return 'url(' .
-                           $quote .
-                           proxyUrl($absolute) .
-                           $quote .
-                           ')';
-                },
+                        $quote =
+                            $match[1];
 
-            $style
-        );
+                        $resource =
+                            trim(
+                                $match[2]
+                            );
+
+
+                        if (
+                            $resource === '' ||
+                            preg_match(
+                                '~^(data|blob|javascript):~i',
+                                $resource
+                            )
+                        ) {
+                            return $match[0];
+                        }
+
+
+                        $absolute =
+                            absoluteUrl(
+                                $resource,
+                                $finalUrl
+                            );
+
+
+                        if (!isAllowedUrl(
+                            $absolute,
+                            $allowedHost
+                        )) {
+                            return $match[0];
+                        }
+
+
+                        return 'url(' .
+                               $quote .
+                               proxyUrl($absolute) .
+                               $quote .
+                               ')';
+                    },
+
+                $style
+            );
+
 
         $node->setAttribute(
             'style',
@@ -1032,6 +1459,7 @@ if (
         'style'
     );
 
+
     $style->appendChild(
         $dom->createTextNode(
             '#sidebarDx,
@@ -1049,8 +1477,10 @@ if (
         )
     );
 
+
     $head =
         $xpath->query('//head')->item(0);
+
 
     if ($head !== null) {
 
@@ -1071,11 +1501,12 @@ if (
      * ------------------------------------------------------------------------
      * OUTPUT HTML
      * ------------------------------------------------------------------------
-     */
+ */
 
     header(
         'Content-Type: text/html; charset=UTF-8'
     );
+
 
     echo $dom->saveHTML();
 
@@ -1089,8 +1520,6 @@ if (
  * ============================================================================
  *
  * Immagini, font, JS, JSON, SVG, ecc.
- *
- * Vengono restituite senza modifiche.
  * ============================================================================
  */
 
@@ -1101,6 +1530,7 @@ if ($contentType !== '') {
         $contentType
     );
 }
+
 
 header(
     'Cache-Control: public, max-age=3600'
