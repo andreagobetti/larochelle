@@ -673,6 +673,14 @@ $isMainRequest =
  */
 $postData = $_POST;
 
+/*
+ * Non inoltrare mai le credenziali del pannello login.
+ */
+unset(
+    $postData['ctl00$loginPanel$txtUsername'],
+    $postData['ctl00$loginPanel$txtPassword']
+);
+
 
 /*
  * ============================================================================
