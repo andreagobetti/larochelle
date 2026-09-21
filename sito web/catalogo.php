@@ -59,9 +59,7 @@ function absoluteUrl(string $url, string $base): string
     }
 
     /*
-     * URL assoluto:
-     *
-     * https://www.example.com/file.css
+     * URL assoluto.
      */
     if (preg_match('~^https?://~i', $url)) {
         return $url;
@@ -75,7 +73,7 @@ function absoluteUrl(string $url, string $base): string
     $basePath = $baseParts['path'] ?? '/';
 
     /*
-     * URL assoluto relativo alla root:
+     * URL dalla root:
      *
      * /images/logo.png
      */
@@ -90,8 +88,8 @@ function absoluteUrl(string $url, string $base): string
      * URL relativo:
      *
      * images/logo.png
+     * ./images/logo.png
      * ../images/logo.png
-     * ../../fonts/font.woff2
      */
 
     $baseDir = dirname($basePath);
@@ -168,7 +166,7 @@ function proxyUrl(string $url): string
 
 
 /**
- * Trasforma un URL relativo in URL proxy.
+ * Trasforma un URL relativo nell'URL del proxy.
  */
 function rewriteUrl(
     string $url,
@@ -192,9 +190,6 @@ function rewriteUrl(
         return $url;
     }
 
-    /*
-     * Trasforma in assoluto.
-     */
     $absolute = absoluteUrl(
         $url,
         $baseUrl
@@ -216,15 +211,24 @@ function rewriteUrl(
 
 /*
  * ============================================================================
- * DOWNLOAD RISORSA REMOTA
+ * DOWNLOAD / PROXY DELLA RISORSA
  * ============================================================================
  */
 
-function fetchRemote(string $url): array
-{
+/**
+ * Scarica la risorsa remota.
+ *
+ * Per POST ricostruisce il body a partire da $_POST.
+ */
+function fetchRemote(
+    string $url,
+    string $method,
+    array $postData
+): array {
+
     $ch = curl_init($url);
 
-    curl_setopt_array($ch, [
+    $options = [
 
         CURLOPT_RETURNTRANSFER => true,
 
@@ -244,8 +248,50 @@ function fetchRemote(string $url): array
         CURLOPT_HTTPHEADER => [
             'Accept: */*',
         ],
+    ];
 
-    ]);
+
+    /*
+     * ------------------------------------------------------------------------
+     * POST
+     * ------------------------------------------------------------------------
+     */
+
+    if ($method === 'POST') {
+
+        $options[CURLOPT_POST] = true;
+
+        /*
+         * Ricostruisce il POST a partire da $_POST.
+         */
+        $options[CURLOPT_POSTFIELDS] = http_build_query(
+            $postData,
+            '',
+            '&'
+        );
+
+        $options[CURLOPT_HTTPHEADER][] =
+            'Content-Type: application/x-www-form-urlencoded';
+    }
+
+
+    /*
+     * ------------------------------------------------------------------------
+     * GET
+     * ------------------------------------------------------------------------
+     */
+
+    else {
+
+        $options[CURLOPT_HTTPGET] = true;
+    }
+
+
+    curl_setopt_array(
+        $ch,
+        $options
+    );
+
 
     $body = curl_exec($ch);
 
@@ -260,6 +306,7 @@ function fetchRemote(string $url): array
             'error'   => $error,
         ];
     }
+
 
     $status = curl_getinfo(
         $ch,
@@ -276,7 +323,9 @@ function fetchRemote(string $url): array
         CURLINFO_EFFECTIVE_URL
     );
 
+
     curl_close($ch);
+
 
     return [
 
@@ -284,9 +333,11 @@ function fetchRemote(string $url): array
 
         'status' => $status,
 
-        'contentType' => $contentType ?: '',
+        'contentType' =>
+            $contentType ?: '',
 
-        'finalUrl' => $finalUrl ?: $url,
+        'finalUrl' =>
+            $finalUrl ?: $url,
 
         'body' => $body,
     ];
@@ -335,11 +386,33 @@ if (!isAllowedUrl(
 
 /*
  * ============================================================================
+ * RICHIESTA ORIGINALE DEL BROWSER
+ * ============================================================================
+ */
+
+$method = strtoupper(
+    $_SERVER['REQUEST_METHOD'] ?? 'GET'
+);
+
+
+/*
+ * Ricostruzione del POST esclusivamente da $_POST.
+ */
+$postData = $_POST;
+
+
+/*
+ * ============================================================================
  * SCARICA RISORSA
  * ============================================================================
  */
 
-$response = fetchRemote($url);
+$response = fetchRemote(
+    $url,
+    $method,
+    $postData
+);
+
 
 if (!$response['success']) {
 
@@ -357,8 +430,11 @@ if (!$response['success']) {
 
 
 /*
- * Gestione HTTP status.
+ * ============================================================================
+ * STATUS HTTP
+ * ============================================================================
  */
+
 if (
     $response['status'] < 200 ||
     $response['status'] >= 400
@@ -389,23 +465,19 @@ $contentType = strtolower(
     )[0]
 );
 
-$finalUrl = $response['finalUrl'];
 
-$body = $response['body'];
+$finalUrl =
+    $response['finalUrl'];
+
+
+$body =
+    $response['body'];
 
 
 /*
  * ============================================================================
  * CSS
  * ============================================================================
- *
- * Riscrive:
- *
- * url(...)
- *
- * e:
- *
- * @import ...
  */
 
 if ($contentType === 'text/css') {
@@ -511,9 +583,6 @@ if ($contentType === 'text/css') {
     );
 
 
-    /*
-     * Content-Type CSS.
-     */
     header(
         'Content-Type: text/css; charset=UTF-8'
     );
@@ -611,21 +680,12 @@ if (
         );
     }
 
+
     /*
-    * ------------------------------------------------------------------------
-    * FORM <form action="">
-    * ------------------------------------------------------------------------
-    *
-    * Riscrive le action dei form attraverso il proxy.
-    *
-    * Esempio:
-    *
-    * action="./pagina.aspx?cat=32"
-    *
-    * diventa:
-    *
-    * action="proxy.php?url=https%3A%2F%2Fwww.cartelli.it%2Fpagina.aspx%3Fcat%3D32"
-    */
+     * ------------------------------------------------------------------------
+     * FORM <form action="">
+     * ------------------------------------------------------------------------
+     */
 
     foreach (
         $xpath->query('//form[@action]')
@@ -641,20 +701,31 @@ if (
         }
 
         $form->setAttribute(
+
             'action',
+
             rewriteUrl(
+
                 $action,
+
                 $finalUrl,
+
                 $allowedHost
             )
         );
     }
 
+
     /*
-    * ------------------------------------------------------------------------
-    * formaction
-    * ------------------------------------------------------------------------
-    */
+     * ------------------------------------------------------------------------
+     * formaction
+     * ------------------------------------------------------------------------
+     *
+     * Gestisce:
+     *
+     * <button formaction="...">
+     * <input formaction="...">
+     */
 
     foreach (
         $xpath->query('//*[@formaction]')
@@ -662,7 +733,9 @@ if (
     ) {
 
         $formAction = trim(
-            $element->getAttribute('formaction')
+            $element->getAttribute(
+                'formaction'
+            )
         );
 
         if ($formAction === '') {
@@ -670,16 +743,19 @@ if (
         }
 
         $element->setAttribute(
+
             'formaction',
+
             rewriteUrl(
+
                 $formAction,
+
                 $finalUrl,
+
                 $allowedHost
             )
         );
     }
-
-
 
 
     /*
@@ -687,7 +763,7 @@ if (
      * TUTTI GLI ELEMENTI CON src
      * ------------------------------------------------------------------------
      *
-     * Questo comprende automaticamente:
+     * Comprende automaticamente:
      *
      * <img src="">
      * <script src="">
@@ -697,8 +773,7 @@ if (
      * <source src="">
      * <embed src="">
      * <input type="image" src="">
-     * e qualsiasi altro elemento HTML
-     * che utilizzi l'attributo src.
+     * ecc.
      */
 
     foreach (
@@ -803,7 +878,8 @@ if (
                 2
             );
 
-            $resource = $parts[0];
+            $resource =
+                $parts[0];
 
             $descriptor =
                 $parts[1] ?? '';
@@ -842,10 +918,6 @@ if (
      * ------------------------------------------------------------------------
      * CSS INLINE
      * ------------------------------------------------------------------------
-     *
-     * Esempio:
-     *
-     * style="background-image:url('/img/a.jpg')"
      */
 
     foreach (
@@ -867,11 +939,11 @@ if (
                     $allowedHost
                 ) {
 
-                    $quote = $match[1];
+                    $quote =
+                        $match[1];
 
-                    $resource = trim(
-                        $match[2]
-                    );
+                    $resource =
+                        trim($match[2]);
 
                     if (
                         $resource === '' ||
@@ -883,10 +955,11 @@ if (
                         return $match[0];
                     }
 
-                    $absolute = absoluteUrl(
-                        $resource,
-                        $finalUrl
-                    );
+                    $absolute =
+                        absoluteUrl(
+                            $resource,
+                            $finalUrl
+                        );
 
                     if (!isAllowedUrl(
                         $absolute,
@@ -913,15 +986,16 @@ if (
 
 
     /*
-    * ------------------------------------------------------------------------
-    * RIMUOVI <base>
-    * ------------------------------------------------------------------------
-    */
+     * ------------------------------------------------------------------------
+     * RIMUOVI <base>
+     * ------------------------------------------------------------------------
+     */
 
     foreach (
         $xpath->query('//base')
         as $base
     ) {
+
         $base->parentNode?->removeChild(
             $base
         );
@@ -929,32 +1003,40 @@ if (
 
 
     /*
-    * ------------------------------------------------------------------------
-    * CSS PERSONALIZZATO DEL PROXY
-    * ------------------------------------------------------------------------
-    *
-    * Questo CSS viene inserito solamente nelle pagine HTML
-    * elaborate dal proxy.
-    */
+     * ------------------------------------------------------------------------
+     * CSS PERSONALIZZATO DEL PROXY
+     * ------------------------------------------------------------------------
+     */
 
-    $style = $dom->createElement('style');
+    $style = $dom->createElement(
+        'style'
+    );
 
     $style->appendChild(
         $dom->createTextNode(
-            '#sidebarDx, .footer, #secondary-menu-bar, #main-menu-top, #Cataloghi, .button.btn-registrati {
+            '#sidebarDx,
+             .footer,
+             #secondary-menu-bar,
+             #main-menu-top,
+             #Cataloghi,
+             .button.btn-registrati {
                 display: none !important;
-            }
-            div.contenitore{
-            margin-top:0!important;
-            }'
+             }
+
+             div.contenitore {
+                margin-top: 0 !important;
+             }'
         )
     );
 
-    $head = $xpath->query('//head')->item(0);
+    $head =
+        $xpath->query('//head')->item(0);
 
     if ($head !== null) {
 
-        $head->appendChild($style);
+        $head->appendChild(
+            $style
+        );
 
     } else {
 
@@ -966,10 +1048,10 @@ if (
 
 
     /*
-    * ------------------------------------------------------------------------
-    * OUTPUT HTML
-    * ------------------------------------------------------------------------
-    */
+     * ------------------------------------------------------------------------
+     * OUTPUT HTML
+     * ------------------------------------------------------------------------
+     */
 
     header(
         'Content-Type: text/html; charset=UTF-8'
@@ -978,7 +1060,6 @@ if (
     echo $dom->saveHTML();
 
     exit;
-
 }
 
 
@@ -987,25 +1068,10 @@ if (
  * TUTTE LE ALTRE RISORSE
  * ============================================================================
  *
- * Qui finiscono:
+ * Immagini, font, JS, JSON, SVG, ecc.
  *
- * immagini
- * JPEG
- * PNG
- * GIF
- * WEBP
- * SVG
- * font
- * WOFF
- * WOFF2
- * TTF
- * OTF
- * JavaScript
- * JSON
- * ecc.
- *
- * NON vengono modificati.
- * Vengono restituiti direttamente al browser.
+ * Vengono restituite senza modifiche.
+ * ============================================================================
  */
 
 if ($contentType !== '') {
