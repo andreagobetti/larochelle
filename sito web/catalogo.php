@@ -636,6 +636,26 @@ if (
 
         '//header',
 
+        /*
+         * Rimuove i span il cui ID contiene
+         * "prodotto_lblDescPrezzoListino".
+         */
+        '//span[contains(@id, "prodotto_lblDescPrezzoListino")]',
+
+
+        /*
+         * Rimuove i span il cui ID contiene
+         * "prodotto_lblPrezzoListino".
+         */
+        '//span[contains(@id, "prodotto_lblPrezzoListino")]', 
+
+        /*
+         * Rimuove i span il cui ID contiene
+         * "ctl00_cphGeneralMasterPage_griglia_ctl01_lblErrore".
+         */
+        '//span[contains(@id, "ctl00_cphGeneralMasterPage_griglia_ctl01_lblErrore")]', 
+      
+
     ];
 
     foreach ($selectors as $selector) {
@@ -1085,5 +1105,6 @@ if ($contentType !== '') {
 header(
     'Cache-Control: public, max-age=3600'
 );
+
 
 echo $body;
