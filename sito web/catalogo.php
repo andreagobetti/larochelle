@@ -211,523 +211,12 @@ function rewriteUrl(
 
 /*
  * ============================================================================
- * PAGINAZIONE
- * ============================================================================
- */
-
-/**
- * Modifica un parametro GET mantenendo tutti gli altri parametri.
- *
- * Esempio:
- *
- * https://www.cartelli.it/Pagine/VisualizzaProdotti.aspx?q=test&p=1
- *
- * diventa:
- *
- * https://www.cartelli.it/Pagine/VisualizzaProdotti.aspx?q=test&p=2
- */
-function setQueryParameter(
-    string $url,
-    string $parameter,
-    string $value
-): string {
-
-    $parts = parse_url($url);
-
-    if ($parts === false) {
-        return $url;
-    }
-
-    $query = [];
-
-    if (!empty($parts['query'])) {
-
-        parse_str(
-            $parts['query'],
-            $query
-        );
-    }
-
-    /*
-     * Modifica solamente il parametro richiesto.
-     */
-    $query[$parameter] = $value;
-
-    $newQuery = http_build_query(
-        $query,
-        '',
-        '&',
-        PHP_QUERY_RFC3986
-    );
-
-    /*
-     * Ricostruzione URL.
-     */
-    $result = '';
-
-    if (isset($parts['scheme'])) {
-
-        $result .=
-            $parts['scheme'] .
-            '://';
-    }
-
-    if (isset($parts['user'])) {
-
-        $result .=
-            $parts['user'];
-
-        if (isset($parts['pass'])) {
-
-            $result .=
-                ':' .
-                $parts['pass'];
-        }
-
-        $result .= '@';
-    }
-
-    if (isset($parts['host'])) {
-
-        $result .=
-            $parts['host'];
-    }
-
-    if (isset($parts['port'])) {
-
-        $result .=
-            ':' .
-            $parts['port'];
-    }
-
-    $result .=
-        $parts['path'] ??
-        '/';
-
-    if ($newQuery !== '') {
-
-        $result .=
-            '?' .
-            $newQuery;
-    }
-
-    if (isset($parts['fragment'])) {
-
-        $result .=
-            '#' .
-            $parts['fragment'];
-    }
-
-    return $result;
-}
-
-
-/**
- * Gestisce la paginazione della sezione prodotti.
- *
- * Cerca una struttura del tipo:
- *
- * <div class="header-prodotti-cercati">
- *
- *     <input type="image"
- *            name="ctl00$cphGeneralMasterPage$lnkArrowPrevTop"
- *            ...>
- *
- *     <span class="numero_pagina">
- *         Pagina 8 di 8
- *     </span>
- *
- *     <input type="image"
- *            name="ctl00$cphGeneralMasterPage$lnkArrowNextTop"
- *            ...>
- *
- * </div>
- *
- * e sostituisce le frecce con normali link GET.
- *
- * La numerazione del sito è:
- *
- * Pagina 1 -> p=0
- * Pagina 2 -> p=1
- * Pagina 3 -> p=2
- * ...
- */
-function rewriteProductPagination(
-    DOMXPath $xpath,
-    string $finalUrl,
-    string $allowedHost
-): void {
-
-    $headers =
-        $xpath->query(
-            '//div[contains(concat(" ", normalize-space(@class), " "), " header-prodotti-cercati ")]'
-        );
-
-
-    foreach ($headers as $header) {
-
-        /*
-         * --------------------------------------------------------------------
-         * TESTO DELLA PAGINAZIONE
-         * --------------------------------------------------------------------
-         */
-
-        $text =
-            trim(
-                $header->textContent
-            );
-
-
-        /*
-         * Cerca:
-         *
-         * Pagina 8 di 8
-         *
-         * Il modificatore "u" permette di lavorare correttamente
-         * anche con eventuali caratteri Unicode.
-         */
-        if (
-            !preg_match(
-                '/Pagina\s+(\d+)\s+di\s+(\d+)/iu',
-                $text,
-                $matches
-            )
-        ) {
-            continue;
-        }
-
-
-        $currentPage =
-            (int) $matches[1];
-
-        $totalPages =
-            (int) $matches[2];
-
-
-        /*
-         * Controllo di sicurezza.
-         */
-        if (
-            $currentPage < 1 ||
-            $totalPages < 1 ||
-            $currentPage > $totalPages
-        ) {
-            continue;
-        }
-
-
-        $document =
-            $header->ownerDocument;
-
-
-        /*
-         * --------------------------------------------------------------------
-         * FRECCIA PRECEDENTE
-         * --------------------------------------------------------------------
-         */
-
-        $prevInput =
-            $xpath->query(
-                './/input[@type="image" and contains(@name, "lnkArrowPrevTop")]',
-                $header
-            )->item(0);
-
-
-        if ($prevInput !== null) {
-
-            /*
-             * La freccia precedente esiste solamente se siamo
-             * oltre la prima pagina.
-             */
-            if ($currentPage > 1) {
-
-                /*
-                 * Esempio:
-                 *
-                 * pagina corrente = 8
-                 *
-                 * pagina precedente = 7
-                 *
-                 * p = 6
-                 */
-                $targetPage =
-                    $currentPage - 1;
-
-                $targetP =
-                    $targetPage - 1;
-
-
-                $targetUrl =
-                    setQueryParameter(
-                        $finalUrl,
-                        'p',
-                        (string) $targetP
-                    );
-
-
-                /*
-                 * Crea:
-                 *
-                 * <a href="catalogo.php?...">
-                 *     <img ...>
-                 * </a>
-                 */
-                $link =
-                    $document->createElement(
-                        'a'
-                    );
-
-
-                $link->setAttribute(
-                    'href',
-                    proxyUrl(
-                        $targetUrl
-                    )
-                );
-
-
-                $link->setAttribute(
-                    'title',
-                    'Pagina precedente'
-                );
-
-
-                /*
-                 * Ricrea l'immagine mantenendo src, class e style.
-                 */
-                $image =
-                    $document->createElement(
-                        'img'
-                    );
-
-
-                foreach (
-                    [
-                        'src',
-                        'class',
-                        'style',
-                    ] as $attribute
-                ) {
-
-                    if (
-                        $prevInput->hasAttribute(
-                            $attribute
-                        )
-                    ) {
-
-                        $value =
-                            $prevInput->getAttribute(
-                                $attribute
-                            );
-
-
-                        if ($attribute === 'src') {
-
-                            $value =
-                                rewriteUrl(
-                                    $value,
-                                    $finalUrl,
-                                    $allowedHost
-                                );
-                        }
-
-
-                        $image->setAttribute(
-                            $attribute,
-                            $value
-                        );
-                    }
-                }
-
-
-                $image->setAttribute(
-                    'alt',
-                    'Pagina precedente'
-                );
-
-
-                $link->appendChild(
-                    $image
-                );
-
-
-                $prevInput->parentNode->replaceChild(
-                    $link,
-                    $prevInput
-                );
-
-            } else {
-
-                /*
-                 * Prima pagina.
-                 *
-                 * Manteniamo la freccia disabilitata.
-                 */
-                $prevInput->setAttribute(
-                    'disabled',
-                    'disabled'
-                );
-            }
-        }
-
-
-        /*
-         * --------------------------------------------------------------------
-         * FRECCIA SUCCESSIVA
-         * --------------------------------------------------------------------
-         */
-
-        $nextInput =
-            $xpath->query(
-                './/input[@type="image" and contains(@name, "lnkArrowNextTop")]',
-                $header
-            )->item(0);
-
-
-        if ($nextInput !== null) {
-
-            /*
-             * La freccia successiva esiste solamente se non siamo
-             * nell'ultima pagina.
-             */
-            if ($currentPage < $totalPages) {
-
-                /*
-                 * Esempio:
-                 *
-                 * pagina corrente = 7
-                 *
-                 * pagina successiva = 8
-                 *
-                 * p = 7
-                 */
-                $targetPage =
-                    $currentPage + 1;
-
-                $targetP =
-                    $targetPage - 1;
-
-
-                $targetUrl =
-                    setQueryParameter(
-                        $finalUrl,
-                        'p',
-                        (string) $targetP
-                    );
-
-
-                $link =
-                    $document->createElement(
-                        'a'
-                    );
-
-
-                $link->setAttribute(
-                    'href',
-                    proxyUrl(
-                        $targetUrl
-                    )
-                );
-
-
-                $link->setAttribute(
-                    'title',
-                    'Pagina successiva'
-                );
-
-
-                /*
-                 * Ricrea l'immagine.
-                 */
-                $image =
-                    $document->createElement(
-                        'img'
-                    );
-
-
-                foreach (
-                    [
-                        'src',
-                        'class',
-                        'style',
-                    ] as $attribute
-                ) {
-
-                    if (
-                        $nextInput->hasAttribute(
-                            $attribute
-                        )
-                    ) {
-
-                        $value =
-                            $nextInput->getAttribute(
-                                $attribute
-                            );
-
-
-                        if ($attribute === 'src') {
-
-                            $value =
-                                rewriteUrl(
-                                    $value,
-                                    $finalUrl,
-                                    $allowedHost
-                                );
-                        }
-
-
-                        $image->setAttribute(
-                            $attribute,
-                            $value
-                        );
-                    }
-                }
-
-
-                $image->setAttribute(
-                    'alt',
-                    'Pagina successiva'
-                );
-
-
-                $link->appendChild(
-                    $image
-                );
-
-
-                $nextInput->parentNode->replaceChild(
-                    $link,
-                    $nextInput
-                );
-
-            } else {
-
-                /*
-                 * Ultima pagina.
-                 *
-                 * Manteniamo la freccia disabilitata.
-                 */
-                $nextInput->setAttribute(
-                    'disabled',
-                    'disabled'
-                );
-            }
-        }
-    }
-}
-
-
-/*
- * ============================================================================
  * COOKIE
  * ============================================================================
  */
 
 /**
  * Converte l'header Set-Cookie remoto in cookie da restituire al browser.
- *
- * Vengono rimossi Domain, Path, Secure e SameSite del server remoto
- * perché il cookie deve appartenere al proxy.
  */
 function rewriteSetCookieForProxy(
     string $setCookie
@@ -766,7 +255,7 @@ function rewriteSetCookieForProxy(
         }
 
         /*
-         * Il proxy deve poter utilizzare il cookie su tutte le sue URL.
+         * Il cookie deve funzionare sulle URL del proxy.
          */
         if (str_starts_with(
             $lower,
@@ -776,8 +265,7 @@ function rewriteSetCookieForProxy(
         }
 
         /*
-         * Il cookie viene inviato anche in HTTP se il proxy viene usato
-         * in HTTP.
+         * Evita problemi se il proxy viene utilizzato in HTTP.
          */
         if ($lower === 'secure') {
             continue;
@@ -800,7 +288,7 @@ function rewriteSetCookieForProxy(
     }
 
     /*
-     * Il cookie deve valere per il proxy.
+     * Il cookie deve valere per tutto il proxy.
      */
     $result[] = 'Path=/';
 
@@ -876,10 +364,6 @@ function fetchRemote(
      * ------------------------------------------------------------------------
      * QUERY STRING
      * ------------------------------------------------------------------------
-     *
-     * "url" è il parametro interno del proxy.
-     *
-     * Tutti gli altri parametri GET vengono inoltrati al server remoto.
      */
 
     if (
@@ -887,30 +371,35 @@ function fetchRemote(
         !empty($getData)
     ) {
 
-        $remoteGetData =
-            $getData;
+        $remoteGetData = $getData;
 
+        /*
+         * "url" è il parametro interno del proxy.
+         */
         unset(
             $remoteGetData['url']
         );
 
+        /*
+         * Anche "resource" è interno al proxy.
+         */
+        unset(
+            $remoteGetData['resource']
+        );
+
         if (!empty($remoteGetData)) {
 
-            $query =
-                http_build_query(
-                    $remoteGetData,
-                    '',
-                    '&',
-                    PHP_QUERY_RFC3986
-                );
+            $query = http_build_query(
+                $remoteGetData,
+                '',
+                '&',
+                PHP_QUERY_RFC3986
+            );
 
             if ($query !== '') {
 
                 $separator =
-                    str_contains(
-                        $url,
-                        '?'
-                    )
+                    str_contains($url, '?')
                     ? '&'
                     : '?';
 
@@ -925,28 +414,21 @@ function fetchRemote(
     $responseHeaders = [];
 
 
-    $ch =
-        curl_init(
-            $url
-        );
+    $ch = curl_init($url);
 
 
     $options = [
 
-        CURLOPT_RETURNTRANSFER =>
-            true,
+        CURLOPT_RETURNTRANSFER => true,
 
         CURLOPT_FOLLOWLOCATION =>
             $followRedirects,
 
-        CURLOPT_MAXREDIRS =>
-            5,
+        CURLOPT_MAXREDIRS => 5,
 
-        CURLOPT_CONNECTTIMEOUT =>
-            10,
+        CURLOPT_CONNECTTIMEOUT => 10,
 
-        CURLOPT_TIMEOUT =>
-            30,
+        CURLOPT_TIMEOUT => 30,
 
         CURLOPT_USERAGENT =>
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' .
@@ -974,9 +456,7 @@ function fetchRemote(
                         "\r\n"
                     );
 
-                return strlen(
-                    $header
-                );
+                return strlen($header);
             },
     ];
 
@@ -996,9 +476,7 @@ function fetchRemote(
         ) {
 
             $cookiePairs[] =
-                $name .
-                '=' .
-                $value;
+                $name . '=' . $value;
         }
 
         if (!empty($cookiePairs)) {
@@ -1020,8 +498,7 @@ function fetchRemote(
 
     if ($method === 'POST') {
 
-        $options[CURLOPT_POST] =
-            true;
+        $options[CURLOPT_POST] = true;
 
         $options[CURLOPT_POSTFIELDS] =
             http_build_query(
@@ -1044,8 +521,7 @@ function fetchRemote(
 
     else {
 
-        $options[CURLOPT_HTTPGET] =
-            true;
+        $options[CURLOPT_HTTPGET] = true;
     }
 
 
@@ -1055,22 +531,14 @@ function fetchRemote(
     );
 
 
-    $body =
-        curl_exec(
-            $ch
-        );
+    $body = curl_exec($ch);
 
 
     if ($body === false) {
 
-        $error =
-            curl_error(
-                $ch
-            );
+        $error = curl_error($ch);
 
-        curl_close(
-            $ch
-        );
+        curl_close($ch);
 
         return [
             'success' => false,
@@ -1079,50 +547,42 @@ function fetchRemote(
     }
 
 
-    $status =
-        curl_getinfo(
-            $ch,
-            CURLINFO_HTTP_CODE
-        );
+    $status = curl_getinfo(
+        $ch,
+        CURLINFO_HTTP_CODE
+    );
 
 
-    $contentType =
-        curl_getinfo(
-            $ch,
-            CURLINFO_CONTENT_TYPE
-        );
+    $contentType = curl_getinfo(
+        $ch,
+        CURLINFO_CONTENT_TYPE
+    );
 
 
-    $finalUrl =
-        curl_getinfo(
-            $ch,
-            CURLINFO_EFFECTIVE_URL
-        );
+    $finalUrl = curl_getinfo(
+        $ch,
+        CURLINFO_EFFECTIVE_URL
+    );
 
 
     /*
-     * Se FOLLOWLOCATION è false, CURLINFO_REDIRECT_URL
+     * Se FOLLOWLOCATION è false,
      * contiene l'URL del redirect.
      */
-    $redirectUrl =
-        curl_getinfo(
-            $ch,
-            CURLINFO_REDIRECT_URL
-        );
-
-
-    curl_close(
-        $ch
+    $redirectUrl = curl_getinfo(
+        $ch,
+        CURLINFO_REDIRECT_URL
     );
+
+
+    curl_close($ch);
 
 
     return [
 
-        'success' =>
-            true,
+        'success' => true,
 
-        'status' =>
-            $status,
+        'status' => $status,
 
         'contentType' =>
             $contentType ?: '',
@@ -1136,8 +596,7 @@ function fetchRemote(
         'headers' =>
             $responseHeaders,
 
-        'body' =>
-            $body,
+        'body' => $body,
     ];
 }
 
@@ -1148,24 +607,20 @@ function fetchRemote(
  * ============================================================================
  */
 
-$url =
-    $_GET['url'] ?? '';
+$url = $_GET['url'] ?? '';
 
 
 if ($url === '') {
-
-    $url =
-        $defaultUrl;
+    $url = $defaultUrl;
 }
 
 
 /*
  * Decodifica il parametro.
  */
-$url =
-    urldecode(
-        $url
-    );
+$url = urldecode(
+    $url
+);
 
 
 /*
@@ -1177,9 +632,7 @@ if (!isAllowedUrl(
     $allowedHost
 )) {
 
-    http_response_code(
-        403
-    );
+    http_response_code(403);
 
     header(
         'Content-Type: text/plain; charset=UTF-8'
@@ -1197,10 +650,9 @@ if (!isAllowedUrl(
  * ============================================================================
  */
 
-$method =
-    strtoupper(
-        $_SERVER['REQUEST_METHOD'] ?? 'GET'
-    );
+$method = strtoupper(
+    $_SERVER['REQUEST_METHOD'] ?? 'GET'
+);
 
 
 /*
@@ -1210,29 +662,22 @@ $method =
  */
 
 $isMainRequest =
-    !isset(
-        $_GET['resource']
-    ) ||
+    !isset($_GET['resource']) ||
     $_GET['resource'] !== '1';
 
 
 /*
  * POST originale.
  */
-$postData =
-    $_POST;
+$postData = $_POST;
 
 
 /*
  * Non inoltrare mai le credenziali del pannello login.
  */
 unset(
-    $postData[
-        'ctl00$loginPanel$txtUsername'
-    ],
-    $postData[
-        'ctl00$loginPanel$txtPassword'
-    ]
+    $postData['ctl00$loginPanel$txtUsername'],
+    $postData['ctl00$loginPanel$txtPassword']
 );
 
 
@@ -1242,29 +687,25 @@ unset(
  * ============================================================================
  */
 
-$response =
-    fetchRemote(
-        $url,
-        $method,
-        $_GET,
-        $postData,
-        !$isMainRequest
-    );
+$response = fetchRemote(
+    $url,
+    $method,
+    $_GET,
+    $postData,
+    !$isMainRequest
+);
 
 
 if (!$response['success']) {
 
-    http_response_code(
-        502
-    );
+    http_response_code(502);
 
     header(
         'Content-Type: text/plain; charset=UTF-8'
     );
 
-    echo
-        'Errore proxy: ' .
-        $response['error'];
+    echo 'Errore proxy: ' .
+         $response['error'];
 
     exit;
 }
@@ -1307,13 +748,12 @@ if (
                 ) === 0
             ) {
 
-                $redirectUrl =
-                    trim(
-                        substr(
-                            $header,
-                            strlen('Location:')
-                        )
-                    );
+                $redirectUrl = trim(
+                    substr(
+                        $header,
+                        strlen('Location:')
+                    )
+                );
 
                 break;
             }
@@ -1326,11 +766,10 @@ if (
         /*
          * Il Location può essere relativo.
          */
-        $redirectUrl =
-            absoluteUrl(
-                $redirectUrl,
-                $url
-            );
+        $redirectUrl = absoluteUrl(
+            $redirectUrl,
+            $url
+        );
 
 
         /*
@@ -1342,9 +781,7 @@ if (
             $allowedHost
         )) {
 
-            http_response_code(
-                502
-            );
+            http_response_code(502);
 
             header(
                 'Content-Type: text/plain; charset=UTF-8'
@@ -1364,14 +801,12 @@ if (
                 $response['headers']
             );
 
-
         foreach (
             $setCookies as $cookie
         ) {
 
             header(
-                'Set-Cookie: ' .
-                $cookie,
+                'Set-Cookie: ' . $cookie,
                 false
             );
         }
@@ -1381,9 +816,7 @@ if (
          * Trasforma il Location remoto in URL del proxy.
          */
         $proxyRedirect =
-            proxyUrl(
-                $redirectUrl
-            );
+            proxyUrl($redirectUrl);
 
 
         http_response_code(
@@ -1429,20 +862,18 @@ if (
     }
 
 
-    echo
-        $response['body'];
+    echo $response['body'];
 
     exit;
 }
 
 
-$contentType =
-    strtolower(
-        explode(
-            ';',
-            $response['contentType']
-        )[0]
-    );
+$contentType = strtolower(
+    explode(
+        ';',
+        $response['contentType']
+    )[0]
+);
 
 
 $finalUrl =
@@ -1464,14 +895,12 @@ $setCookies =
         $response['headers']
     );
 
-
 foreach (
     $setCookies as $cookie
 ) {
 
     header(
-        'Set-Cookie: ' .
-        $cookie,
+        'Set-Cookie: ' . $cookie,
         false
     );
 }
@@ -1491,63 +920,57 @@ if ($contentType === 'text/css') {
      * ------------------------------------------------------------------------
      */
 
-    $body =
-        preg_replace_callback(
+    $body = preg_replace_callback(
 
-            '~url\(\s*([\'"]?)(.*?)\1\s*\)~i',
+        '~url\(\s*([\'"]?)(.*?)\1\s*\)~i',
 
-            function (array $match)
-                use (
-                    $finalUrl,
-                    $allowedHost
+        function (array $match)
+            use (
+                $finalUrl,
+                $allowedHost
+            ) {
+
+                $quote = $match[1];
+
+                $resource = trim(
+                    $match[2]
+                );
+
+                if (
+                    $resource === '' ||
+                    str_starts_with(
+                        $resource,
+                        '#'
+                    ) ||
+                    preg_match(
+                        '~^(data|blob|javascript):~i',
+                        $resource
+                    )
                 ) {
+                    return $match[0];
+                }
 
-                    $quote =
-                        $match[1];
+                $absolute = absoluteUrl(
+                    $resource,
+                    $finalUrl
+                );
 
-                    $resource =
-                        trim(
-                            $match[2]
-                        );
+                if (!isAllowedUrl(
+                    $absolute,
+                    $allowedHost
+                )) {
+                    return $match[0];
+                }
 
-                    if (
-                        $resource === '' ||
-                        str_starts_with(
-                            $resource,
-                            '#'
-                        ) ||
-                        preg_match(
-                            '~^(data|blob|javascript):~i',
-                            $resource
-                        )
-                    ) {
-                        return $match[0];
-                    }
+                return 'url(' .
+                       $quote .
+                       proxyUrl($absolute) .
+                       $quote .
+                       ')';
+            },
 
-                    $absolute =
-                        absoluteUrl(
-                            $resource,
-                            $finalUrl
-                        );
-
-                    if (!isAllowedUrl(
-                        $absolute,
-                        $allowedHost
-                    )) {
-                        return $match[0];
-                    }
-
-                    return 'url(' .
-                           $quote .
-                           proxyUrl(
-                               $absolute
-                           ) .
-                           $quote .
-                           ')';
-                },
-
-            $body
-        );
+        $body
+    );
 
 
     /*
@@ -1556,44 +979,39 @@ if ($contentType === 'text/css') {
      * ------------------------------------------------------------------------
      */
 
-    $body =
-        preg_replace_callback(
+    $body = preg_replace_callback(
 
-            '~@import\s+(?:url\(\s*)?[\'"]?([^\'"\)\s]+)[\'"]?\s*\)?~i',
+        '~@import\s+(?:url\(\s*)?[\'"]?([^\'"\)\s]+)[\'"]?\s*\)?~i',
 
-            function (array $match)
-                use (
-                    $finalUrl,
+        function (array $match)
+            use (
+                $finalUrl,
+                $allowedHost
+            ) {
+
+                $resource = trim(
+                    $match[1]
+                );
+
+                $absolute = absoluteUrl(
+                    $resource,
+                    $finalUrl
+                );
+
+                if (!isAllowedUrl(
+                    $absolute,
                     $allowedHost
-                ) {
+                )) {
+                    return $match[0];
+                }
 
-                    $resource =
-                        trim(
-                            $match[1]
-                        );
+                return '@import url("' .
+                       proxyUrl($absolute) .
+                       '")';
+            },
 
-                    $absolute =
-                        absoluteUrl(
-                            $resource,
-                            $finalUrl
-                        );
-
-                    if (!isAllowedUrl(
-                        $absolute,
-                        $allowedHost
-                    )) {
-                        return $match[0];
-                    }
-
-                    return '@import url("' .
-                           proxyUrl(
-                               $absolute
-                           ) .
-                           '")';
-                },
-
-            $body
-        );
+        $body
+    );
 
 
     header(
@@ -1622,14 +1040,9 @@ if (
     $contentType === ''
 ) {
 
-    libxml_use_internal_errors(
-        true
-    );
+    libxml_use_internal_errors(true);
 
-
-    $dom =
-        new DOMDocument();
-
+    $dom = new DOMDocument();
 
     $dom->loadHTML(
         $body,
@@ -1637,11 +1050,7 @@ if (
         LIBXML_HTML_NODEFDTD
     );
 
-
-    $xpath =
-        new DOMXPath(
-            $dom
-        );
+    $xpath = new DOMXPath($dom);
 
 
     /*
@@ -1726,20 +1135,16 @@ if (
         as $form
     ) {
 
-        $action =
-            trim(
-                $form->getAttribute(
-                    'action'
-                )
-            );
-
+        $action = trim(
+            $form->getAttribute(
+                'action'
+            )
+        );
 
         if ($action === '') {
 
-            $action =
-                $finalUrl;
+            $action = $finalUrl;
         }
-
 
         $form->setAttribute(
 
@@ -1764,24 +1169,19 @@ if (
      */
 
     foreach (
-        $xpath->query(
-            '//*[@formaction]'
-        )
+        $xpath->query('//*[@formaction]')
         as $element
     ) {
 
-        $formAction =
-            trim(
-                $element->getAttribute(
-                    'formaction'
-                )
-            );
-
+        $formAction = trim(
+            $element->getAttribute(
+                'formaction'
+            )
+        );
 
         if ($formAction === '') {
             continue;
         }
-
 
         $element->setAttribute(
 
@@ -1806,24 +1206,17 @@ if (
      */
 
     foreach (
-        $xpath->query(
-            '//*[@src]'
-        )
+        $xpath->query('//*[@src]')
         as $node
     ) {
 
-        $src =
-            trim(
-                $node->getAttribute(
-                    'src'
-                )
-            );
-
+        $src = trim(
+            $node->getAttribute('src')
+        );
 
         if ($src === '') {
             continue;
         }
-
 
         $node->setAttribute(
 
@@ -1848,24 +1241,17 @@ if (
      */
 
     foreach (
-        $xpath->query(
-            '//link[@href]'
-        )
+        $xpath->query('//link[@href]')
         as $node
     ) {
 
-        $href =
-            trim(
-                $node->getAttribute(
-                    'href'
-                )
-            );
-
+        $href = trim(
+            $node->getAttribute('href')
+        );
 
         if ($href === '') {
             continue;
         }
-
 
         $node->setAttribute(
 
@@ -1890,9 +1276,7 @@ if (
      */
 
     foreach (
-        $xpath->query(
-            '//*[@srcset]'
-        )
+        $xpath->query('//*[@srcset]')
         as $node
     ) {
 
@@ -1901,13 +1285,11 @@ if (
                 'srcset'
             );
 
-
         $items =
             explode(
                 ',',
                 $srcset
             );
-
 
         $newItems = [];
 
@@ -1916,28 +1298,22 @@ if (
             $items as $item
         ) {
 
-            $item =
-                trim(
-                    $item
-                );
-
+            $item = trim(
+                $item
+            );
 
             if ($item === '') {
                 continue;
             }
 
-
-            $parts =
-                preg_split(
-                    '/\s+/',
-                    $item,
-                    2
-                );
-
+            $parts = preg_split(
+                '/\s+/',
+                $item,
+                2
+            );
 
             $resource =
                 $parts[0];
-
 
             $descriptor =
                 $parts[1] ?? '';
@@ -1983,9 +1359,7 @@ if (
      */
 
     foreach (
-        $xpath->query(
-            '//*[@style]'
-        )
+        $xpath->query('//*[@style]')
         as $node
     ) {
 
@@ -2043,9 +1417,7 @@ if (
 
                         return 'url(' .
                                $quote .
-                               proxyUrl(
-                                   $absolute
-                               ) .
+                               proxyUrl($absolute) .
                                $quote .
                                ')';
                     },
@@ -2079,58 +1451,473 @@ if (
 
 
     /*
-     * ------------------------------------------------------------------------
-     * PAGINAZIONE PRODOTTI
-     * ------------------------------------------------------------------------
+     * =========================================================================
+     * PAGINAZIONE PERSONALIZZATA
+     * =========================================================================
      *
      * Cerca:
      *
-     *     <div class="header-prodotti-cercati">
+     * <div class="header-prodotti-cercati">
      *
-     *         ...
+     * ed estrae dal testo:
      *
-     *         <span class="numero_pagina">
-     *             Pagina X di Y
-     *         </span>
+     * "Pagina X di Y"
      *
-     *         ...
+     * La pagina del sito è zero-based nel parametro p:
      *
-     *     </div>
+     * pagina 1 -> p=0
+     * pagina 2 -> p=1
+     * pagina 3 -> p=2
      *
-     * e trasforma le input type="image" delle frecce in normali
-     * link GET che modificano solamente il parametro p.
+     * Le immagini delle frecce vengono sostituite con:
      *
-     * Esempio:
+     * <
+     * >
      *
-     * Pagina 2 di 8
-     *
-     *     precedente -> p=0
-     *     successiva -> p=2
+     * =========================================================================
      */
 
-    rewriteProductPagination(
-        $xpath,
-        $finalUrl,
-        $allowedHost
-    );
-
-
-    /*
-     * ------------------------------------------------------------------------
-     * CSS PERSONALIZZATO DEL PROXY
-     * ------------------------------------------------------------------------
-     */
-
-    $style =
-        $dom->createElement(
-            'style'
+    $paginationHeaders =
+        $xpath->query(
+            '//div[
+                contains(
+                    concat(
+                        " ",
+                        normalize-space(@class),
+                        " "
+                    ),
+                    " header-prodotti-cercati "
+                )
+            ]'
         );
 
 
+    foreach (
+        $paginationHeaders as $pagination
+    ) {
+
+        /*
+         * ---------------------------------------------------------------------
+         * Estrae il testo "Pagina X di Y"
+         * ---------------------------------------------------------------------
+         */
+
+        $text =
+            trim(
+                preg_replace(
+                    '/\s+/',
+                    ' ',
+                    $pagination->textContent
+                )
+            );
+
+
+        /*
+         * Esempio:
+         *
+         * Pagina 8 di 8
+         */
+
+        if (
+            !preg_match(
+                '/Pagina\s+(\d+)\s+di\s+(\d+)/i',
+                $text,
+                $matches
+            )
+        ) {
+            continue;
+        }
+
+
+        $currentPage =
+            (int) $matches[1];
+
+        $totalPages =
+            (int) $matches[2];
+
+
+        if (
+            $currentPage < 1 ||
+            $totalPages < 1
+        ) {
+            continue;
+        }
+
+
+        /*
+         * ---------------------------------------------------------------------
+         * Funzione per costruire l'URL della pagina
+         * ---------------------------------------------------------------------
+         *
+         * Mantiene tutti gli altri parametri, ad esempio:
+         *
+         * q=test
+         *
+         * e modifica solamente:
+         *
+         * p
+         *
+         */
+
+        $buildPageUrl =
+            function (
+                string $baseUrl,
+                int $page
+            ): string {
+
+                $parts =
+                    parse_url($baseUrl);
+
+                if ($parts === false) {
+                    return $baseUrl;
+                }
+
+
+                $query = [];
+
+
+                if (
+                    isset($parts['query']) &&
+                    $parts['query'] !== ''
+                ) {
+
+                    parse_str(
+                        $parts['query'],
+                        $query
+                    );
+                }
+
+
+                /*
+                 * Il sito utilizza:
+                 *
+                 * pagina 1 -> p=0
+                 * pagina 2 -> p=1
+                 * pagina 3 -> p=2
+                 */
+
+                $query['p'] =
+                    $page - 1;
+
+
+                $newQuery =
+                    http_build_query(
+                        $query,
+                        '',
+                        '&',
+                        PHP_QUERY_RFC3986
+                    );
+
+
+                $result =
+                    ($parts['scheme'] ?? 'https') .
+                    '://' .
+                    ($parts['host'] ?? '');
+
+
+                if (
+                    isset($parts['port'])
+                ) {
+
+                    $result .=
+                        ':' .
+                        $parts['port'];
+                }
+
+
+                $result .=
+                    $parts['path'] ?? '/';
+
+
+                if ($newQuery !== '') {
+
+                    $result .=
+                        '?' .
+                        $newQuery;
+                }
+
+
+                if (
+                    isset($parts['fragment'])
+                ) {
+
+                    $result .=
+                        '#' .
+                        $parts['fragment'];
+                }
+
+
+                return $result;
+            };
+
+
+        /*
+         * ---------------------------------------------------------------------
+         * URL precedente
+         * ---------------------------------------------------------------------
+         */
+
+        $previousUrl = '';
+
+
+        if ($currentPage > 1) {
+
+            $previousUrl =
+                $buildPageUrl(
+                    $finalUrl,
+                    $currentPage - 1
+                );
+        }
+
+
+        /*
+         * ---------------------------------------------------------------------
+         * URL successiva
+         * ---------------------------------------------------------------------
+         */
+
+        $nextUrl = '';
+
+
+        if ($currentPage < $totalPages) {
+
+            $nextUrl =
+                $buildPageUrl(
+                    $finalUrl,
+                    $currentPage + 1
+                );
+        }
+
+
+        /*
+         * ---------------------------------------------------------------------
+         * INPUT FRECCIA PRECEDENTE
+         * ---------------------------------------------------------------------
+         */
+
+        $previousInputs =
+            $xpath->query(
+                './/input[
+                    @type="image"
+                    and contains(
+                        translate(
+                            @id,
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                            "abcdefghijklmnopqrstuvwxyz"
+                        ),
+                        "arrowprev"
+                    )
+                ]',
+                $pagination
+            );
+
+
+        foreach (
+            $previousInputs as $input
+        ) {
+
+            $replacement =
+                $dom->createElement(
+                    'a'
+                );
+
+
+            /*
+             * Se esiste una pagina precedente,
+             * il carattere < è cliccabile.
+             */
+
+            if ($previousUrl !== '') {
+
+                $replacement->setAttribute(
+                    'href',
+                    proxyUrl($previousUrl)
+                );
+
+            } else {
+
+                /*
+                 * Prima pagina:
+                 * freccia disabilitata.
+                 */
+
+                $replacement->setAttribute(
+                    'href',
+                    '#'
+                );
+
+                $replacement->setAttribute(
+                    'aria-disabled',
+                    'true'
+                );
+
+                $replacement->setAttribute(
+                    'onclick',
+                    'return false;'
+                );
+            }
+
+
+            $replacement->setAttribute(
+                'title',
+                'Pagina precedente'
+            );
+
+
+            $replacement->setAttribute(
+                'style',
+                'font-size:16px;' .
+                'font-weight:bold;' .
+                'text-decoration:none;' .
+                'display:inline-block;' .
+                'margin-right:10px;' .
+                (
+                    $previousUrl === ''
+                    ? 'opacity:0.35;cursor:default;'
+                    : 'cursor:pointer;'
+                )
+            );
+
+
+            /*
+             * Scriviamo il carattere < come testo.
+             *
+             * DOMDocument si occuperà di convertirlo
+             * correttamente in &lt; nell'HTML.
+             */
+
+            $replacement->appendChild(
+                $dom->createTextNode('<')
+            );
+
+
+            $input->parentNode?->replaceChild(
+                $replacement,
+                $input
+            );
+        }
+
+
+        /*
+         * ---------------------------------------------------------------------
+         * INPUT FRECCIA SUCCESSIVA
+         * ---------------------------------------------------------------------
+         */
+
+        $nextInputs =
+            $xpath->query(
+                './/input[
+                    @type="image"
+                    and contains(
+                        translate(
+                            @id,
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                            "abcdefghijklmnopqrstuvwxyz"
+                        ),
+                        "arrownext"
+                    )
+                ]',
+                $pagination
+            );
+
+
+        foreach (
+            $nextInputs as $input
+        ) {
+
+            $replacement =
+                $dom->createElement(
+                    'a'
+                );
+
+
+            /*
+             * Se esiste una pagina successiva,
+             * il carattere > è cliccabile.
+             */
+
+            if ($nextUrl !== '') {
+
+                $replacement->setAttribute(
+                    'href',
+                    proxyUrl($nextUrl)
+                );
+
+            } else {
+
+                /*
+                 * Ultima pagina:
+                 * freccia disabilitata.
+                 */
+
+                $replacement->setAttribute(
+                    'href',
+                    '#'
+                );
+
+                $replacement->setAttribute(
+                    'aria-disabled',
+                    'true'
+                );
+
+                $replacement->setAttribute(
+                    'onclick',
+                    'return false;'
+                );
+            }
+
+
+            $replacement->setAttribute(
+                'title',
+                'Pagina successiva'
+            );
+
+
+            $replacement->setAttribute(
+                'style',
+                'font-size:16px;' .
+                'font-weight:bold;' .
+                'text-decoration:none;' .
+                'display:inline-block;' .
+                'margin-left:10px;' .
+                (
+                    $nextUrl === ''
+                    ? 'opacity:0.35;cursor:default;'
+                    : 'cursor:pointer;'
+                )
+            );
+
+
+            /*
+             * Carattere >
+             */
+
+            $replacement->appendChild(
+                $dom->createTextNode('>')
+            );
+
+
+            $input->parentNode?->replaceChild(
+                $replacement,
+                $input
+            );
+        }
+    }
+
+
+    /*
+     * =========================================================================
+     * CSS PERSONALIZZATO DEL PROXY
+     * =========================================================================
+     */
+
+    $style = $dom->createElement(
+        'style'
+    );
+
+
     $style->appendChild(
-
         $dom->createTextNode(
-
             '#sidebarDx,
              .footer,
              #secondary-menu-bar,
@@ -2148,9 +1935,7 @@ if (
 
 
     $head =
-        $xpath->query(
-            '//head'
-        )->item(0);
+        $xpath->query('//head')->item(0);
 
 
     if ($head !== null) {
@@ -2169,9 +1954,9 @@ if (
 
 
     /*
-     * ------------------------------------------------------------------------
+     * =========================================================================
      * OUTPUT HTML
-     * ------------------------------------------------------------------------
+     * =========================================================================
      */
 
     header(
@@ -2179,8 +1964,7 @@ if (
     );
 
 
-    echo
-        $dom->saveHTML();
+    echo $dom->saveHTML();
 
     exit;
 }
