@@ -301,10 +301,7 @@ end if
 			$(ulbreadcrumb).find("li").last().removeClass( "active" );
 			$(ulbreadcrumb).append('<li><a href="category.asp?idsettore='+groupName+'" class="onclick bread" id="#ids_'+groupName+'">'+$(this).text()+'</a></li>');
 		}
-
 		// reshuffle grid
-		//var item='<div class="col-md-3 col-sm-6 col-xs-12 data-groups=''["'+groupName+'"]''><a href="#" id="#ids_"  class=btn btn-custom onclick admin><i class=fa fa-star></i>Prova</a></div>';
-
 		if (groupName!=0){
 			console.log("indietro"+$("#indietro"+groupName).length);
 			if ($("#indietro"+groupName).length==0){
@@ -316,16 +313,12 @@ end if
 		}
 		$grid.shuffle('shuffle', groupName );
 		<%end if %>
-
-
-		if (id==-10){return;}
-		//var id =event.target;
+		if (id==-10){return;}		
 		if(id!=last_id){
 		$.ajax({
 				url     : "category_ajax.asp?add=si&idsettore=" + id,
 				type    : "GET",
 				success: function(data){
-
 					$("#elenco_articoli").html(data);
 					last_id=id;
 					try{
@@ -334,8 +327,6 @@ end if
 					catch(err){
 						console.log()
 					}
-					//this.itemHoverAnimation();
-
 				}
 				,error:function(xhr, textStatus, error){
 						console.log("xhr.statusText:"+xhr.statusText);
@@ -374,22 +365,16 @@ end if
 			e.preventDefault();
 			var querystring=$(this).attr('href').split("?");
 			if ($(this).hasClass("myhover")){
-				console.log ("selezionato, querystring prima"+querystring[1]);
 				querystring[1]=removeURLParameter(querystring[1],"idtag");
-				console.log ("selezionato, querystring dopo"+querystring[1]);
 			}
-
-			console.log("chpage:"+querystring[1]);
 			//Aggiorno elenco
 			$.ajax({
 				url     : "category_ajax.asp?"+querystring[1],
 				type    : "POST",
 				success: function(data){
-
 					$("#elenco_articoli").html(data);
 					$("#category-breadcrumb").scrollintoview({duration: 'slow'});
 					history.pushState({}, document.title , "category.asp?"+querystring[1]);
-
 				}
 				,error:function(xhr, textStatus, error){
 				      console.log("xhr.statusText:"+xhr.statusText);
@@ -403,7 +388,6 @@ end if
 					  txt+="<br>"+xhr.responseText;
 					  txt+="<br>textStatus:"+textStatus;
 					  txt+="<br>error:"+error;
-
 					  $.ajax({
 						url     : "searcher.asp",
 						type    : "post",
@@ -492,22 +476,18 @@ end if
 					dataType: 'json',
 					data	: order,
 					success: function(data){
-						//alert(data.Message);
-
 						$(".alert-success").hide();
 						$(".alert-success").slideDown();
-
+					},
+					error:function(xhr, textStatus, error){
+						console.log("xhr.statusText:"+xhr.statusText);
+						console.log("xhr.responseText:"+xhr.responseText);
+						console.log("textStatus:"+textStatus);
+						console.log("error:"+error);
 					}
-					,error:function(xhr, textStatus, error){
-					      console.log("xhr.statusText:"+xhr.statusText);
-					      console.log("xhr.responseText:"+xhr.responseText);
-					      console.log("textStatus:"+textStatus);
-					      console.log("error:"+error);
-						  }
 				});
 			});
 		<%end if%>
-
 	});
 	function removeURLParameter(url, parameter) {
 	    //prefer to use l.search if you have a location/link object
@@ -550,7 +530,6 @@ function breadcrumb(id,tmp,lingua)
 	breadcrumb=tmp
 	set rs_settore=nothing
 End function
-
 
 sub Elencosettori(layer,id,idindietro,testo,admin)
 	'declaring
