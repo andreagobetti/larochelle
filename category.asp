@@ -421,9 +421,6 @@ end if
 						});
 					  }
 			});
-
-
-
 		});
 		$("body").on("click","#settore-in-preferiti",function(e){
 			e.preventDefault();
@@ -469,11 +466,7 @@ end if
 						});
 					  }
 			});
-
-
-
 		});
-
 
 		<%if utente_admin and riordina then%>
 			$( "#category-item-container" ).sortable({
@@ -492,9 +485,7 @@ end if
 			$("#riordina_articoli").click(function(e){
 				var order = $('#category-item-container').sortable('serialize');
 	      		console.log("ordine="+order);
-
 	      		$.ajaxSetup({ cache: false });
-
 			    $.ajax({
 					url     : "ajax_function.asp?oper=riordina_articoli&idsettore="+last_id,
 					type    : "post",
@@ -520,23 +511,19 @@ end if
 	});
 	function removeURLParameter(url, parameter) {
 	    //prefer to use l.search if you have a location/link object
-
-	        var prefix= encodeURIComponent(parameter)+'=';
-	        var pars= url.split(/[&;]/g);
-
-	        //reverse iteration as may be destructive
-	        for (var i= pars.length; i-- > 0;) {
-	            //idiom for string.startsWith
-	            if (pars[i].lastIndexOf(prefix, 0) !== -1) {
-	                pars.splice(i, 1);
-	            }
-	        }
-
-	        url= pars.join('&');
-	        return url;
+		var prefix= encodeURIComponent(parameter)+'=';
+		var pars= url.split(/[&;]/g);
+		//reverse iteration as may be destructive
+		for (var i= pars.length; i-- > 0;) {
+			//idiom for string.startsWith
+			if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+				pars.splice(i, 1);
+			}
+		}
+		url= pars.join('&');
+		return url;
 	}
 	</script>
-
     </body>
 </html>
 <!--#include virtual="/dettaglio_inc.asp" -->
@@ -589,11 +576,6 @@ sub Elencosettori(layer,id,idindietro,testo,admin)
 
 	rs_order.open sql_order,conn
 	nodo=true
-	'testo=testo&testo_dopo
-	'	testo_dopo=""
-	if testo="" then 'Inizio del blocco
-		'testo=testo&  "<div class=""col-md-4 item"" data-groups='[""indietro""]'><div class=""divpadding""><a href=""#"" id=""indietro"" data-group="""" ></a></div></div><!-- End .col-md-4 -->"
-	end if
 	if layer>0 and false then 'Inizio di ogni sottogruppo "INDIETRO"
 		testo=testo&  "<div class=""col-md-3 col-sm-6 col-xs-12"" data-groups='["""&id&"""]'><a href=""category.asp?idsettore="&idindietro&"""  id=""#ids_"&idindietro&""" class=""btn btn-custom indietro onclick"">&laquo; Indietro</a></div><!-- End .col-md-4 -->"
 	end if
