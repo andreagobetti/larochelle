@@ -532,17 +532,13 @@ end if
 
 function breadcrumb(id,tmp,lingua)
 	'create recordset
-
 	set rs_settore=conn.execute ("select * FROM settori WHERE idsettore = " & id&";")
 		if id=0 then
 				tmp="<li><a href='"&questofile&"' id=""#ids_0"" class=""onclick bread"">Tutte le categorie</a></li>"&tmp
 		end if
-
 	'find child with thread_parent=his parent id
 	if not rs_settore.eof then
 		pulsanti_indietro="<div class=""col-md-3 col-sm-6 col-xs-12 shuffle-item"" id=""indietro"&id&""" data-groups='["""&id&"""]' data-sort=""0""><a href=""category.asp?idsettore="&rs_settore("idpadre")&""" id=""#ids_"&rs_settore("idpadre")&""" class=""btn btn-custom indietro onclick"">&laquo; Indietro</a></div>"&pulsanti_indietro
-
-
 		if tmp="" then txtclass="class=""active"""
 		if tmp="" then
 			tmp="<li><a href='category.asp?idsettore="&rs_settore("idsettore")&"' class=""active"">"&rs_settore("Nome_Settore"&lingua)&"</a></li>"&tmp
@@ -550,9 +546,7 @@ function breadcrumb(id,tmp,lingua)
 			tmp="<li><a href='category.asp?idsettore="&rs_settore("idsettore")&"'>"&rs_settore("Nome_Settore"&lingua)&"</a></li>"&tmp
 		end if
 		tmp=breadcrumb(rs_settore("idpadre"),tmp,lingua)
-
 	end if
-
 	breadcrumb=tmp
 	set rs_settore=nothing
 End function
@@ -565,28 +559,20 @@ sub Elencosettori(layer,id,idindietro,testo,admin)
 	set rs_order=server.createObject("adodb.recordset")
 	'find child with thread_parent=his parent id
 	'sql_order="select settori.idsettore, settori.Nome_Settore, settori.idpadre, settori.nascondi_prezzi, settori.nascondi, settori.ordine, Count(prodotti.IDpro) AS ConteggioDiIDpro, Count(settori_1.idsettore) AS ConteggioDiidsettore FROM settori AS settori_1 RIGHT JOIN ((settori LEFT JOIN settori_prodotti ON settori.idsettore = settori_prodotti.IDsettore) LEFT JOIN prodotti ON settori_prodotti.IDpro = prodotti.IDpro) ON settori_1.idsettore = settori.idpadre GROUP BY settori.idsettore, settori.Nome_Settore, settori.idpadre,settori.nascondi, settori.ordine, settori.nascondi_prezzi HAVING settori.idpadre=" & id & ""
-
-
 	sql_order="select settori.idsettore, settori.nome_settore,  settori.nascondi_prezzi, settori_settori.idpadre, settori.colore from settori_settori inner join settori on settori_settori.idfiglio = settori.idsettore where settori_settori.idpadre="&id
-
 	sql_order=sql_order&" and settori.nascondi=0 "
 	sql_order=sql_order&" order by settori_settori.ordine"
-'response.write sql_order
-
-
 	rs_order.open sql_order,conn
 	nodo=true
 	if layer>0 and false then 'Inizio di ogni sottogruppo "INDIETRO"
 		testo=testo&  "<div class=""col-md-3 col-sm-6 col-xs-12"" data-groups='["""&id&"""]'><a href=""category.asp?idsettore="&idindietro&"""  id=""#ids_"&idindietro&""" class=""btn btn-custom indietro onclick"">&laquo; Indietro</a></div><!-- End .col-md-4 -->"
 	end if
-
 	classadmin=""
 	do until rs_order.eof
 		stringa="|"&rs_order("idpadre")&"-"&rs_order("idsettore")&"|"
 		if instr(str_elencosettori,stringa)=0 then
 			testo=testo&  "<div class=""col-md-3 col-sm-6 col-xs-12"" data-groups='["""&rs_order("idpadre")&"""]'><a href=""category.asp?idsettore="&rs_order("idsettore")&""" id=""#ids_"&rs_order("idsettore")&"""  class=""btn btn-custom onclick strong "&classadmin&""""
 			if rs_order("colore")<>"" then
-
 				testo=testo&" style=""background-color: #"&rs_order("colore")&""""
 			end if
 			testo=testo&">"&rs_order("nome_settore")
@@ -596,11 +582,11 @@ sub Elencosettori(layer,id,idindietro,testo,admin)
 	    call Elencosettori(layer+1,rs_order("idsettore"),id,testo,admin)
 		rs_order.movenext
 	loop
-
 	rs_order.Close
 	set rs_order=Nothing
 	set rs_tot=nothing
 End Sub
+
 function Get_Elencosettori_Admin()
 	dim testo
 	testo=""
@@ -707,6 +693,7 @@ function Get_Elencosettori_Admin()
 	end if
 	Get_Elencosettori_Admin=application("cache_settori_admin")
 End Function
+
 function Get_banner_slider()
 	if application("cache_banner_slider")="" then
 		dim stringa
