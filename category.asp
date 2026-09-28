@@ -85,39 +85,36 @@ end if
         	<%else %>
 			<div class="md-margin"></div><!-- .space -->
 			<%end if %>
-
-        	        												<div class="row">
-                                    									<div class="container" style="background-color: #dcdc07;">
-                                    										<h3>Attenzione</h3>
+        	        												<div class="row disclaimer43" style="display:none">
+                                    									<div class="container" style="background-color: #ffeb3b;">
+                                    										<h3>TERMINI E CONDIZIONI PER RESI E SOSTITUZIONI</h3>
 
                                                                                 Si accettano resi per sostituzioni e/o riparazioni, <strong>entro un mese dalla consegna e solo degli articoli provvisti di cartellino e nella confezione integra</strong>, con la seguente precisazione:
                                     											<ul>
                                     											<li><strong>Abbigliamento:</strong> una volta personalizzati con scritte e/o loghi, non potranno essere sostituiti salvo difetti di fabbricazione</li>
-                                    											<li><strong>Calzature:</strong> solo modelli a listino (esclusi quelli su ordinazione), per difetti di fabbricazionbe, per taglia errata</li>
+                                    											<li><strong>Calzature:</strong> solo modelli a listino (esclusi quelli su ordinazione), per difetti di fabbricazione, per taglia errata</li>
                                                                                 </ul>
 <strong>Sostituzioni</strong><br>
-Per motivi amministrativi e fiscali, saranno concesse ed effettuate:<br>
-dopo aver verificato l'integrità dei prodotti, 
-nel caso di difetti, dopo aver esaminato il prodotto.
+Per motivi amministrativi e fiscali, saranno concesse ed effettuate: dopo aver verificato l'integrità dei prodotti, nel caso di difetti, dopo aver esaminato il prodotto.
                                     									</div><!-- End .container -->
                                     								</div><!-- End .row -->
 
-        		<div class="row">
+        		<div class="row disclaimer43bis" style="display:none;">
         			<div class="container" style="background-color: #28fc03;">
-						<h3>I BOLLINI VERDI PRESENTI SUL CATALOGO INDICANO GLI ARTICOLI CONFORMI AL NUOVO CAPITOLATO 2021 POLIZIA LOCALE REGIONE PIEMONTE</h3>
+						<h3>BOLLINI VERDI</h3>
 						<p>
-							I codici relativi ai prodotti presenti su questo catalogo sono tutti inseriti su mepa</p>
+							I bollini verdi presenti sul catalogo indicano gli articoli conformi al nuovo capitolato 2021 Polizia Locale Regione Piemonte.<br>I codici relativi ai prodotti presenti su questo catalogo sono tutti inseriti su mepa.</p>
 
 	    			</div><!-- End .container -->
         		</div><!-- End .row -->
-        		<div class="row">
-        			<div class="container" style="background-color: #FF5733; margin-bottom: 10px; color: #FCDD00;">
-						<h3 style="color: #FCDD00;">Gli articoli privi di bollino verde, non più previsti dal nuovo capitolato P.L. Regione Piemonte, sono in esaurimento ed  alcuni disponibili solo su ordinazione.</h3>
-						 Non è possibile garantire la successiva sostituzione.
+        		<div class="row disclaimer43tris" style="display:none;">
+        			<div class="container">
+						<a href="https://vegaholster.com/wp-content/uploads/cataloghi/VH_cat_Gen_low_ita.pdf">
+        			    <img src="https://www.larochelle.it/wp-content/uploads/2026/06/vega-holster.png"/><h3>Clicca qui per scaricare il catalogo Vega Holster</h3></a>
 
 	    			</div><!-- End .container -->
         		</div><!-- End .row -->
-
+        	<br/><br/>
         	<div class="container">
 
 	        <%if tipo_category=1 then%>
@@ -361,6 +358,33 @@ nel caso di difetti, dopo aver esaminato il prodotto.
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 	<script src="js/main.js"></script>
 	<script>
+	
+	function checkSelettore(id){
+		if(id!=43){
+		    const el = document.querySelector(".disclaimer43");
+		    el.style.display="none";
+		    const el2 = document.querySelector(".disclaimer43bis");
+		    el2.style.display="none";
+		}
+		else{
+		    const el = document.querySelector(".disclaimer43");
+		    el.style.display="block";
+		    const el2 = document.querySelector(".disclaimer43bis");
+		    el2.style.display="block";
+		}
+		if(id==75){
+		    const el3 = document.querySelector(".disclaimer43tris");
+		    el3.style.display="block";
+		    console.log("hide")
+		    document.getElementById('elenco_articoli').style.display='none';
+		}
+		else{
+		    const el3 = document.querySelector(".disclaimer43tris");
+		    el3.style.display="none";
+		    document.getElementById('elenco_articoli').style.display='block';
+		    
+		}
+	}
 
 	$(function(){
 
@@ -426,12 +450,39 @@ nel caso di difetti, dopo aver esaminato il prodotto.
 
 		var str_settori="<%=str_settori%>";
 		var last_id=<%=idsettore%>;
+		checkSelettore(last_id);
+		
 
 			$("body").on("click",".onclick",function(e){
 			e.preventDefault();
 
 			var id = $(this).attr('id').replace("#ids_", "");
 			console.log ("idsettore:"+id);
+			if(id!=43){
+			    const el = document.querySelector(".disclaimer43");
+			    el.style.display="none";
+			    const el2 = document.querySelector(".disclaimer43bis");
+			    el2.style.display="none";
+			}
+			else{
+			    const el = document.querySelector(".disclaimer43");
+			    el.style.display="block";
+			    const el2 = document.querySelector(".disclaimer43bis");
+			    el2.style.display="block";
+			}
+			if(id==75){
+			    const el3 = document.querySelector(".disclaimer43tris");
+			    el3.style.display="block";
+			    console.log("hide")
+			    document.getElementById('elenco_articoli').style.display='none';
+			}
+			else{
+			    const el3 = document.querySelector(".disclaimer43tris");
+			    el3.style.display="none";
+			    document.getElementById('elenco_articoli').style.display='block';
+			    
+			}
+			
 
 			//Breadcrumb e Shuffle
 			//var groupName = $(this).attr('data-group');
