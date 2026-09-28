@@ -77,149 +77,81 @@ end if
 				</ul>
 			</div>
 		</div>
-																<div class="row disclaimer43" style="display:none">
-																	<div class="container" style="background-color: #ffeb3b;">
-																		<h3>TERMINI E CONDIZIONI PER RESI E SOSTITUZIONI</h3>
-
-																			Si accettano resi per sostituzioni e/o riparazioni, <strong>entro un mese dalla consegna e solo degli articoli provvisti di cartellino e nella confezione integra</strong>, con la seguente precisazione:
-																			<ul>
-																			<li><strong>Abbigliamento:</strong> una volta personalizzati con scritte e/o loghi, non potranno essere sostituiti salvo difetti di fabbricazione</li>
-																			<li><strong>Calzature:</strong> solo modelli a listino (esclusi quelli su ordinazione), per difetti di fabbricazione, per taglia errata</li>
-																			</ul>
-<strong>Sostituzioni</strong><br>
-Per motivi amministrativi e fiscali, saranno concesse ed effettuate: dopo aver verificato l'integrità dei prodotti, nel caso di difetti, dopo aver esaminato il prodotto.
-																	</div><!-- End .container -->
-																</div><!-- End .row -->
-
-			<div class="row disclaimer43bis" style="display:none;">
-				<div class="container" style="background-color: #28fc03;">
-					<h3>BOLLINI VERDI</h3>
-					<p>
-						I bollini verdi presenti sul catalogo indicano gli articoli conformi al nuovo capitolato 2021 Polizia Locale Regione Piemonte.<br>I codici relativi ai prodotti presenti su questo catalogo sono tutti inseriti su mepa.</p>
-
-				</div><!-- End .container -->
-			</div><!-- End .row -->
-			<div class="row disclaimer43tris" style="display:none;">
-				<div class="container">
-					<a href="https://vegaholster.com/wp-content/uploads/cataloghi/VH_cat_Gen_low_ita.pdf">
-					<img src="https://www.larochelle.it/wp-content/uploads/2026/06/vega-holster.png"/><h3>Clicca qui per scaricare il catalogo Vega Holster</h3></a>
-
-				</div><!-- End .container -->
-			</div><!-- End .row -->
+		<div class="row disclaimer43" style="display:none">
+			<div class="container" style="background-color: #ffeb3b;">
+				<h3>TERMINI E CONDIZIONI PER RESI E SOSTITUZIONI</h3>
+					Si accettano resi per sostituzioni e/o riparazioni, <strong>entro un mese dalla consegna e solo degli articoli provvisti di cartellino e nella confezione integra</strong>, con la seguente precisazione:
+					<ul>
+						<li><strong>Abbigliamento:</strong> una volta personalizzati con scritte e/o loghi, non potranno essere sostituiti salvo difetti di fabbricazione</li>
+						<li><strong>Calzature:</strong> solo modelli a listino (esclusi quelli su ordinazione), per difetti di fabbricazione, per taglia errata</li>
+					</ul>
+					<strong>Sostituzioni</strong><br>
+					Per motivi amministrativi e fiscali, saranno concesse ed effettuate: dopo aver verificato l'integrità dei prodotti, nel caso di difetti, dopo aver esaminato il prodotto.
+			</div><!-- End .container -->
+		</div><!-- End .row -->
+		<div class="row disclaimer43bis" style="display:none;">
+			<div class="container" style="background-color: #28fc03;">
+				<h3>BOLLINI VERDI</h3>
+				<p>
+					I bollini verdi presenti sul catalogo indicano gli articoli conformi al nuovo capitolato 2021 Polizia Locale Regione Piemonte.<br>
+					I codici relativi ai prodotti presenti su questo catalogo sono tutti inseriti su mepa.
+				</p>
+			</div><!-- End .container -->
+		</div><!-- End .row -->
+		<div class="row disclaimer43tris" style="display:none;">
+			<div class="container">
+				<a href="https://vegaholster.com/wp-content/uploads/cataloghi/VH_cat_Gen_low_ita.pdf">
+				<img src="https://www.larochelle.it/wp-content/uploads/2026/06/vega-holster.png"/><h3>Clicca qui per scaricare il catalogo Vega Holster</h3></a>
+			</div><!-- End .container -->
+		</div><!-- End .row -->
 		<br/><br/>
 		<div class="container">
-
 		<%if tipo_category=1 then%>
 			<div id="griglia-settori">
-							<%
-								if application("cache_settori"&lingua)="" then
-								'if true then
-									testo=""
-									call Elencosettori(0,0,0,testo,false)
-									application("cache_settori"&lingua)=testo
-									'add2log "Rigenerata cache elenco settori",1
-								end if
-								response.write application("cache_settori")
-								if utente_admin then
-									response.write Get_Elencosettori_Admin()
-								end if
-
-							%>
-							<%
-								if idsettore>0 then response.write pulsanti_indietro
-
-
-
-								%>
-
-
+				<%
+					if application("cache_settori"&lingua)="" then
+						testo=""
+						call Elencosettori(0,0,0,testo,false)
+						application("cache_settori"&lingua)=testo
+					end if
+					response.write application("cache_settori")
+					if utente_admin then
+						response.write Get_Elencosettori_Admin()
+					end if
+				%>
+				<%
+					if idsettore>0 then response.write pulsanti_indietro
+				%>
 			</div>
 		<%end if%>
-
 			<div class="row">
 				<div class="col-md-12">
-
 					<div class="row">
-
 						<div class="col-md-9 col-sm-8 col-xs-12 main-content" id="elenco_articoli">
 							<%
-
 							call elenco_articoli()
 							%>
-
 						</div><!-- End .col-md-9 -->
-
 						<aside class="col-md-3 col-sm-4 col-xs-12 sidebar">
-
 							<div class="widget">
 								<div class="panel-group custom-accordion sm-accordion" id="category-filter">
-
-									<%if false then%>
-									<div class="panel">
-										<div class="accordion-header">
-											<div class="accordion-title"><span>Brand</span></div><!-- End .accordion-title -->
-											<a class="accordion-btn opened"  data-toggle="collapse" data-target="#category-list-2"></a>
-										</div><!-- End .accordion-header -->
-
-									<div id="category-list-2" class="collapse in">
-										<div class="panel-body">
-										<ul class="category-filter-list jscrollpane">
-											<li><a href="#">Samsung (50)</a></li>
-											<li><a href="#">Apple (80)</a></li>
-											<li><a href="#">HTC (20)</a></li>
-											<li><a href="#">Motoroloa (20)</a></li>
-											<li><a href="#">Nokia (11)</a></li>
-										</ul>
-										</div><!-- End .panel-body -->
-									</div><!-- #collapse -->
-
-									</div><!-- End .panel -->
-
-								<div class="panel">
-										<div class="accordion-header">
-											<div class="accordion-title"><span>Price</span></div><!-- End .accordion-title -->
-											<a class="accordion-btn opened"  data-toggle="collapse" data-target="#category-list-3"></a>
-										</div><!-- End .accordion-header -->
-
-									<div id="category-list-3" class="collapse in">
-										<div class="panel-body">
-											<div id="price-range">
-
-											</div><!-- End #price-range -->
-											<div id="price-range-details">
-												<span class="sm-separator">from</span>
-												<input type="text" id="price-range-low" class="separator">
-												<span class="sm-separator">to</span>
-												<input type="text" id="price-range-high">
-											</div>
-											<div id="price-range-btns">
-												<a href="#" class="btn btn-custom-2 btn-sm">Ok</a>
-												<a href="#" class="btn btn-custom-2 btn-sm">Clear</a>
-											</div>
-										</div><!-- End .panel-body -->
-									</div><!-- #collapse -->
-									</div><!-- End .panel -->
-
-									<%end if%>
+									
 								</div><!-- .panel-group -->
-							</div><!-- End .widget -->
-							
+							</div><!-- End .widget -->							
 							<%
-								if utente_admin then%>
-								<a href="pag_adm_elenco_banner.asp" class="btn btn-custom">Gestisci banner</a>
-								<%end if
-								response.write Get_banner_slider()
-set conn = nothing
-
-
+								if utente_admin then
 							%>
-
+								<a href="pag_adm_elenco_banner.asp" class="btn btn-custom">Gestisci banner</a>
+							<%
+								end if
+								response.write Get_banner_slider()
+								set conn = nothing
+							%>
 						</aside><!-- End .col-md-3 -->
 					</div><!-- End .row -->
 				</div><!-- End .col-md-12 -->
 			</div><!-- End .row -->
 		</div><!-- End .container -->
-
 	</section><!-- End #content -->
 
 	<!--#include virtual="/footer_inc.asp" -->
@@ -234,7 +166,6 @@ set conn = nothing
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 	<script src="js/main.js"></script>
 	<script>
-	
 	function checkSelettore(id){
 		if(id!=43){
 		    const el = document.querySelector(".disclaimer43");
@@ -278,13 +209,8 @@ set conn = nothing
 		  console.log('Finished initializing shuffle!');
 		});
 
-
-
-
-
 		var ulbreadcrumb=$("#category-breadcrumb").find("ul");
 		<%end if %>
-
 
 			//onerror=handleErr;
 
@@ -296,154 +222,150 @@ set conn = nothing
 			txt+="Line: " + l + "\n\n";
 			$.ajaxSetup({ cache: false });
 			$.ajax({
-							url     : "searcher.asp",
-							cache: false,
-							type    : "post",
-							data	: "txt_errore="+encodeURIComponent(txt),
-							success: function(data){
-								console.log("Errore inviato");
-								}
-							,error:function(xhr, textStatus, error){
-								console.log("xhr.statusText:"+xhr.statusText);
-								console.log("xhr.responseText:"+xhr.responseText);
-								console.log("textStatus:"+textStatus);
-								console.log("error:"+error);
-								console.log("INVIO ERRORE FALLITO");
-							}
+				url     : "searcher.asp",
+				cache: false,
+				type    : "post",
+				data	: "txt_errore="+encodeURIComponent(txt),
+				success: function(data){
+					console.log("Errore inviato");
+					}
+				,error:function(xhr, textStatus, error){
+					console.log("xhr.statusText:"+xhr.statusText);
+					console.log("xhr.responseText:"+xhr.responseText);
+					console.log("textStatus:"+textStatus);
+					console.log("error:"+error);
+					console.log("INVIO ERRORE FALLITO");
+				}
 			});
-
 			return true;
 		}
-
 		<%if utente_admin then %>
 		$.ajaxSetup({ cache: false });
 		<%end if%>
 		//$.get("category_ajax.asp?add=si", function (result) {
 		//	$("#elenco_articoli").html(result);
 		//	last_id=<%=idsettore%>;
-
 		//});
-
 		var str_settori="<%=str_settori%>";
 		var last_id=<%=idsettore%>;
 		checkSelettore(last_id);
 		
 
-			$("body").on("click",".onclick",function(e){
-			e.preventDefault();
+		$("body").on("click",".onclick",function(e){
+		e.preventDefault();
 
-			var id = $(this).attr('id').replace("#ids_", "");
-			console.log ("idsettore:"+id);
-			if(id!=43){
-			    const el = document.querySelector(".disclaimer43");
-			    el.style.display="none";
-			    const el2 = document.querySelector(".disclaimer43bis");
-			    el2.style.display="none";
-			}
-			else{
-			    const el = document.querySelector(".disclaimer43");
-			    el.style.display="block";
-			    const el2 = document.querySelector(".disclaimer43bis");
-			    el2.style.display="block";
-			}
-			if(id==75){
-			    const el3 = document.querySelector(".disclaimer43tris");
-			    el3.style.display="block";
-			    console.log("hide")
-			    document.getElementById('elenco_articoli').style.display='none';
-			}
-			else{
-			    const el3 = document.querySelector(".disclaimer43tris");
-			    el3.style.display="none";
-			    document.getElementById('elenco_articoli').style.display='block';
-			    
-			}
+		var id = $(this).attr('id').replace("#ids_", "");
+		console.log ("idsettore:"+id);
+		if(id!=43){
+			const el = document.querySelector(".disclaimer43");
+			el.style.display="none";
+			const el2 = document.querySelector(".disclaimer43bis");
+			el2.style.display="none";
+		}
+		else{
+			const el = document.querySelector(".disclaimer43");
+			el.style.display="block";
+			const el2 = document.querySelector(".disclaimer43bis");
+			el2.style.display="block";
+		}
+		if(id==75){
+			const el3 = document.querySelector(".disclaimer43tris");
+			el3.style.display="block";
+			console.log("hide")
+			document.getElementById('elenco_articoli').style.display='none';
+		}
+		else{
+			const el3 = document.querySelector(".disclaimer43tris");
+			el3.style.display="none";
+			document.getElementById('elenco_articoli').style.display='block';
 			
+		}
+		
 
-			//Breadcrumb e Shuffle
-			//var groupName = $(this).attr('data-group');
-			groupName=id;
-			<%if tipo_category=1 then%>
-			if($(this).hasClass("bread"))
-			{
-				$(this).parent("li").nextAll().remove()
+		//Breadcrumb e Shuffle
+		//var groupName = $(this).attr('data-group');
+		groupName=id;
+		<%if tipo_category=1 then%>
+		if($(this).hasClass("bread"))
+		{
+			$(this).parent("li").nextAll().remove()
 
+		}
+		else if($(this).hasClass("indietro"))
+		{
+			$(ulbreadcrumb).find("li").last().remove();
+			$(ulbreadcrumb).find("li").last().addClass( "active" );
+		}
+		else
+		{
+			$(ulbreadcrumb).find("li").last().removeClass( "active" );
+			$(ulbreadcrumb).append('<li><a href="category.asp?idsettore='+groupName+'" class="onclick bread" id="#ids_'+groupName+'">'+$(this).text()+'</a></li>');
+		}
+
+		// reshuffle grid
+		//var item='<div class="col-md-3 col-sm-6 col-xs-12 data-groups=''["'+groupName+'"]''><a href="#" id="#ids_"  class=btn btn-custom onclick admin><i class=fa fa-star></i>Prova</a></div>';
+
+		if (groupName!=0){
+			console.log("indietro"+$("#indietro"+groupName).length);
+			if ($("#indietro"+groupName).length==0){
+				console.log("aggiungo indietro"+groupName)
+				var $item = $('<div class="col-md-3 col-sm-6 col-xs-12" id="indietro'+groupName+'" data-groups=\'["'+groupName+'"]\' data-sort="0"><a href="category.asp?idsettore='+last_id+'"  id="#ids_'+last_id+'" class="btn btn-custom indietro onclick">&laquo; Indietro</a></div>')
+				$grid.append($item);
+				$grid.shuffle('appended', $item);
 			}
-			else if($(this).hasClass("indietro"))
-			{
-				$(ulbreadcrumb).find("li").last().remove();
-				$(ulbreadcrumb).find("li").last().addClass( "active" );
-			}
-			else
-			{
-				$(ulbreadcrumb).find("li").last().removeClass( "active" );
-				$(ulbreadcrumb).append('<li><a href="category.asp?idsettore='+groupName+'" class="onclick bread" id="#ids_'+groupName+'">'+$(this).text()+'</a></li>');
-			}
-
-			// reshuffle grid
-			//var item='<div class="col-md-3 col-sm-6 col-xs-12 data-groups=''["'+groupName+'"]''><a href="#" id="#ids_"  class=btn btn-custom onclick admin><i class=fa fa-star></i>Prova</a></div>';
-
-			if (groupName!=0){
-				console.log("indietro"+$("#indietro"+groupName).length);
-				if ($("#indietro"+groupName).length==0){
-					console.log("aggiungo indietro"+groupName)
-					var $item = $('<div class="col-md-3 col-sm-6 col-xs-12" id="indietro'+groupName+'" data-groups=\'["'+groupName+'"]\' data-sort="0"><a href="category.asp?idsettore='+last_id+'"  id="#ids_'+last_id+'" class="btn btn-custom indietro onclick">&laquo; Indietro</a></div>')
-					$grid.append($item);
-					$grid.shuffle('appended', $item);
-				}
-			}
-			$grid.shuffle('shuffle', groupName );
-			<%end if %>
+		}
+		$grid.shuffle('shuffle', groupName );
+		<%end if %>
 
 
-			if (id==-10){return;}
-			//var id =event.target;
-			if(id!=last_id){
-			$.ajax({
-					url     : "category_ajax.asp?add=si&idsettore=" + id,
-					type    : "GET",
-					success: function(data){
+		if (id==-10){return;}
+		//var id =event.target;
+		if(id!=last_id){
+		$.ajax({
+				url     : "category_ajax.asp?add=si&idsettore=" + id,
+				type    : "GET",
+				success: function(data){
 
-						$("#elenco_articoli").html(data);
-						last_id=id;
-						try{
-							history.pushState({}, document.title , "category.asp?idsettore="+id);
-						}
-						catch(err){
-							console.log()
-						}
-						//this.itemHoverAnimation();
-
+					$("#elenco_articoli").html(data);
+					last_id=id;
+					try{
+						history.pushState({}, document.title , "category.asp?idsettore="+id);
 					}
-					,error:function(xhr, textStatus, error){
-					      console.log("xhr.statusText:"+xhr.statusText);
-					      console.log("xhr.responseText:"+xhr.responseText);
-					      console.log("textStatus:"+textStatus);
-					      console.log("error:"+error);
-						  var txt="";
-						  txt+="Errore in category.asp consultazione category_ajax<br>";
-						  txt+="<br>querystring: ?idsettore="+ last_id;
-						  txt+="<br>"+xhr.statusText;
-						  txt+="<br>"+xhr.responseText;
-						  txt+="<br>textStatus:"+textStatus;
-						  txt+="<br>error:"+error;
+					catch(err){
+						console.log()
+					}
+					//this.itemHoverAnimation();
 
-						  $.ajax({
-							url     : "searcher.asp",
-							type    : "post",
-							data	: "txt_errore="+encodeURIComponent(txt),
-							success: function(data){
-								console.log("Errore inviato");
-								}
-							,error:function(xhr, textStatus, error){
-								console.log("xhr.statusText:"+xhr.statusText);
-								console.log("xhr.responseText:"+xhr.responseText);
-								console.log("textStatus:"+textStatus);
-								console.log("error:"+error);
-								console.log("INVIO ERRORE FALLITO");
+				}
+				,error:function(xhr, textStatus, error){
+						console.log("xhr.statusText:"+xhr.statusText);
+						console.log("xhr.responseText:"+xhr.responseText);
+						console.log("textStatus:"+textStatus);
+						console.log("error:"+error);
+						var txt="";
+						txt+="Errore in category.asp consultazione category_ajax<br>";
+						txt+="<br>querystring: ?idsettore="+ last_id;
+						txt+="<br>"+xhr.statusText;
+						txt+="<br>"+xhr.responseText;
+						txt+="<br>textStatus:"+textStatus;
+						txt+="<br>error:"+error;
+
+						$.ajax({
+						url     : "searcher.asp",
+						type    : "post",
+						data	: "txt_errore="+encodeURIComponent(txt),
+						success: function(data){
+							console.log("Errore inviato");
 							}
-							});
-						  }
+						,error:function(xhr, textStatus, error){
+							console.log("xhr.statusText:"+xhr.statusText);
+							console.log("xhr.responseText:"+xhr.responseText);
+							console.log("textStatus:"+textStatus);
+							console.log("error:"+error);
+							console.log("INVIO ERRORE FALLITO");
+						}
+						});
+						}
 				});
 			}
 		});
