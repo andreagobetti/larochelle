@@ -722,3 +722,11 @@ function Get_banner_slider()
 	Get_banner_slider=application("cache_banner_slider")
 end function
 %>
+
+<style>
+	a[href="category.asp?idsettore=66"]{
+		background: #FFEB3B;
+		color: #c80e00!important;
+		border: 1px solid;
+	}
+</style>
