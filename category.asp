@@ -104,7 +104,7 @@ end if
 			<img src="https://www.larochelle.it/wp-content/uploads/2026/06/vega-holster.png"/><h3>Clicca qui per scaricare il catalogo Vega Holster</h3></a>
 		</div><!-- End .container -->
 	</div><!-- End .row -->
-	<br/><br/>
+	<br/>
 	<div class="container">
 	<%if tipo_category=1 then%>
 		<div id="griglia-settori">
@@ -201,10 +201,6 @@ end if
 			itemSelector: '.col-md-3', // the selector for the items in the grid
 			group: '<%=idsettore%>',
 			initialSort: 'data-sort'
-
-		});
-		$grid.on('done.shuffle', function() {
-		  console.log('Finished initializing shuffle!');
 		});
 		var ulbreadcrumb=$("#category-breadcrumb").find("ul");
 		<%end if %>
@@ -286,11 +282,9 @@ end if
 			$(ulbreadcrumb).find("li").last().removeClass( "active" );
 			$(ulbreadcrumb).append('<li><a href="category.asp?idsettore='+groupName+'" class="onclick bread" id="#ids_'+groupName+'">'+$(this).text()+'</a></li>');
 		}
-		// reshuffle grid
+		// Adding a back button and re-shuffling grid if needed
 		if (groupName!=0){
-			console.log("indietro"+$("#indietro"+groupName).length);
 			if ($("#indietro"+groupName).length==0){
-				console.log("aggiungo indietro"+groupName)
 				var $item = $('<div class="col-md-3 col-sm-6 col-xs-12" id="indietro'+groupName+'" data-groups=\'["'+groupName+'"]\' data-sort="0"><a href="category.asp?idsettore='+last_id+'"  id="#ids_'+last_id+'" class="btn btn-custom indietro onclick">&laquo; Indietro</a></div>')
 				$grid.append($item);
 				$grid.shuffle('appended', $item);
@@ -691,5 +685,34 @@ end function
 		background: #FFEB3B;
 		color: #c80e00!important;
 		border: 1px solid;
+	}
+	.col-md-3.col-sm-6.col-xs-12.shuffle-item.filtered {
+		position: initial !important;
+		left: initial !important;
+		top: initial !important;
+		float: left;
+		display: inline-block;
+		transform: none !important;
+		line-height: 2px;
+		padding: 3px;
+		height: 34px;
+	}
+	.col-md-3.col-sm-6.col-xs-12.shuffle-item.filtered a
+	{
+		line-height: 15px;
+		padding-left: 10px;
+		padding-right: 10px;
+		font-size: 13px;
+		height: 40px;
+		vertical-align: middle;
+		margin: auto;
+
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+	}
+	#griglia-settori{
+		margin-bottom:10px;
 	}
 </style>
