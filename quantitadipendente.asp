@@ -3,34 +3,15 @@
 %>
 <!--#include virtual="/setup.asp" -->
 <%
-	
 iduser=session("iduser")
 idfoglio=request("foglio")
 iddip=request("iddip")
-
-
-
-
-
-
 if request.form("salva")<>"" then
-	
-	
 	Call aggiorna()
-	
 	end if
-
-
 Set rs_dipendenti=conn.Execute("select * from dipendenti where iddip="&iddip)
-
 foglio_spettanze=true
-
-
-
-
 nominativodip=rs_dipendenti("cognome")&" "&rs_dipendenti("nome")
-
-
 ordinaper=Request.Cookies("/foglio-spettanze.asp")("ordina")
 if ordinaper="codice" then
 	orderby=" codice"
@@ -45,16 +26,8 @@ else
 end if
 	sql="select utenti_foglio_spettanze.* from utenti_foglio_spettanze where id="&idfoglio
 	set rs_foglio=conn.Execute(sql)
-	
-	
-
-
-sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by "&orderby
-
-set rs_prodotti=conn.execute(sql)
-
-
-
+	sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by "&orderby
+	set rs_prodotti=conn.execute(sql)
 %>
 <!--#include virtual="/config/header_inc.asp" -->
 <!--#include virtual="/pag_adm_ordini_inc.asp" -->
