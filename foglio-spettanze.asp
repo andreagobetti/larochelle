@@ -522,72 +522,38 @@ testocella=quantita
 
 <script type="text/javascript" src="Jquery/Js/screenfull.min.js"></script>
 <script type="text/javascript">
-      $(function() {
-	      
-	      
-	      
+      $(function() {	      
  		$('#fullscreen').click(function () {
 			screenfull.toggle($('#tablefull')[0]);
 		});
 	  screenfull.on('change', function(){
 		  console.log("#tablefull.height:"+$("#tablefull").height());
-		 // $("#tablefull").scrollintoview();
-		  /*
-		  table.destroy();
-		  
-		  table = $('#example').DataTable( {
-			"ordering": false,
-	        "info":     false,
-	         "searching": false,
-	        scrollY:        "500px",
-	        scrollX:        true,
-	        scrollCollapse: true,
-	        paging:         false,
-	        fixedColumns:   {
-	            leftColumns: 1
-	        }
-	    } );
-		*/
-		  
-	  });
- 
-	      
-	      
-  	$(".quantita").hover(function(){
-		
+	  });	      
+  	$(".quantita").hover(function(){		
 		$('.articoli').each(function(i, obj) {
 			$(obj).css('background','');			
 		});
 		$('.dipendenti').each(function(i, obj) {
 			$(obj).css('background','');			
-		});
-		
-		
+		});			
 		var string=$(this).attr('id');
-		console.log("string:"+string);
-		
+		console.log("string:"+string);		
 		var array = string.split('_');
 		var idpro=array[1];
-		var iddip=array[2];
-  	
-  	
+		var iddip=array[2];  	
 		console.log("idpro:"+idpro+" iddip:"+iddip);
 		$(".idpro"+idpro).each(function(i, obj) {
 			$(obj).css("background",'#dfff26');
 			console.log("trovato"+idpro);
 		});
 		$("#iddip"+iddip).css("background",'#dfff26');
-		//$("#idpro"+idpro).css("background",'#dfff26');
-  	//$("#iddip"+iddip).css("background",'#dfff26');
 	});
-	$(".tipo_ordine").click(function(){
-		
+	$(".tipo_ordine").click(function(){		
 	if($(this).val()=="0"){
 		$("#alert_tipo_ordine").slideDown();
 	}else
 		$("#alert_tipo_ordine").slideUp();
-	});
-	      
+	});	      
 	var header_height = 0;
     $('.header_height').each(function() {
         if ($(this).outerWidth() > header_height){
@@ -602,12 +568,8 @@ testocella=quantita
         } 
     });
 	$('.footer').height(footer_height);
-    
-    console.log("Altezza celle dipendenti:"+header_height);
-	      
-	//	$('#pippo').DataTable();
     $('form').dirtyForms({
-			    ignoreSelector: '#fullscreen',
+		ignoreSelector: '#fullscreen',
 		message: 'Hai modificato dei dati ma non hai salvato le modifiche, se lasci la pagina le modifiche andranno perse.<br>Sei sicuro di voler abbandonare la pagina?',
 		dialog: {
 		title: 'Avvertenza',
@@ -617,14 +579,12 @@ testocella=quantita
 	var hidden=false;
 	$(document).bind('dirty.dirtyforms', function(event) { 
 		if(!hidden){
-		
-		console.log("dirty");
-		$(".totali").hide();
-		$(".totalidipendenti").each(function(e){
-			$(this).hide();
-		});
-		$("#avviso").show();
-		hidden=true;
+			$(".totali").hide();
+			$(".totalidipendenti").each(function(e){
+				$(this).hide();
+			});
+			$("#avviso").show();
+			hidden=true;
 		}
 	});
 		
