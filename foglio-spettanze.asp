@@ -3,13 +3,9 @@
 <!--#include virtual="/pag_adm_ordini_inc.asp" -->
 <!--#include virtual="/ClasseOrdine.asp" -->
 <%
-	
-	
 if not utente_user then response.redirect "login.asp"
 iduser=session("iduser")
 idfoglio=request("idfoglio")
-
-
 if Request.querystring("nuovo")<>"" then
 	Set rs_foglio = Server.CreateObject("ADODB.Recordset")
 	rs_foglio.open "utenti_foglio_spettanze",conn,3 ,3
@@ -21,16 +17,11 @@ if Request.querystring("nuovo")<>"" then
 	idfoglio=Get_last_id("utenti_foglio_spettanze")
 	response.redirect("foglio-spettanze.asp?idforglio="&idforglio)
 end if
-
 if request.form("elimina")<>"" then
 	conn.execute("delete from utenti_spettanze where idfoglio="&idfoglio)
 	conn.execute("delete from utenti_foglio_spettanze where id="&idfoglio)
 	response.redirect("fogli-spettanze.asp")
 end if
-
-'if request.querystring("iduser")<>"" and session("idadmin")<>"" then
-'	iduser=request.querystring("iduser")
-'end if	
 aggiornato=false
 if request.form("aggiungi")<>""  or request.form("completa")<>"" then
 	call aggiorna_spettanze()
@@ -47,8 +38,6 @@ else
 end if
 set rs=conn.execute (sql)
 if not rs.eof then
-	
-	
 	tipo_ordine=rs("tipo_ordine")
 	cig=rs("cig")
 	determinazione=rs("determinazione")
@@ -59,7 +48,6 @@ if not rs.eof then
 	if iduser<>session("iduser") and not utente_admin then
 		call esci(3,idfoglio)	
 	end if
-	
 	if completo="" or isnull(completo) then
 		boolcompleto=false
 	else
@@ -69,18 +57,15 @@ if not rs.eof then
 		disabled=" disabled "
 	end if
 	idfoglio=rs("id")
-	
 	if utente_admin then
 		boolcompleto=true
 		end if
-	
 else
 	tipo_ordine=-1
 	cig=""
 	determinazione=""
 	note=""
 	completo=""
-	
 	idfoglio=0
 end if
 alert_display="style=""display:none;"""
@@ -117,17 +102,15 @@ if dividi_settori="si" then
 end if%>
 <!--#include virtual="/config/header_inc.asp" -->
 <section id="content">
-	        	<div id="breadcrumb-container">
-        		<div class="container">
-					<ul class="breadcrumb">
-						<li><a href="/">Home</a></li>
-						<li class=""><a href="/fogli-spettanze.asp">Fogli spettanze</a></li>
-						<li class="">Foglio spettanze del <%=creato%></li>
-
-					</ul>
-        		</div>
-        	</div>
-
+	<div id="breadcrumb-container">
+		<div class="container">
+			<ul class="breadcrumb">
+				<li><a href="/">Home</a></li>
+				<li class=""><a href="/fogli-spettanze.asp">Fogli spettanze</a></li>
+				<li class="">Foglio spettanze del <%=creato%></li>
+			</ul>
+		</div>
+	</div>
 	<div class="container">
 	    <form method="POST" action="<%=questofile%>" >
 			<div class="row">
@@ -141,84 +124,73 @@ end if%>
 				<%if session("errore")<>"" then %>
 					<div class="alert alert-danger" role="alert"> <strong>Attenzione:</strong> <%=session("errore")%>
 					</div>				
-				
 				<%
 					session("errore")=""
-					end if %>	
-					
-	
-				<%if boolcompleto then %>
+				end if 	
+				if boolcompleto then 
+				%>
 					<div class="alert alert-info" role="alert"> <strong>Attenzione:</strong> Il foglio spettanze è completato, non può essere modificato. <a href="pdf-foglio-spettanze.asp?idfoglio=<%=idfoglio%>" class="btn btn-custom">SCARICA la versione PDF</a> 
 					</div>
 				<%end if %>
 	        	</div><!-- col-md-12-->			
-			</div><!-- End .row -->
-       				
+			</div><!-- End .row -->	
 			<div class="xs-margin"></div><!-- space -->
-			
 			<input type="hidden" name="idfoglio" value="<%=idfoglio%>">
 				<fieldset>
-				<div class="row">
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<h2 class="checkout-title">Dati generali</h2>
-					</div>
-				</div><!-- End .row -->
-					
-				<div class="row">
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="input-group">
-							<span class="input-group-addon"><span class="input-text">TRATTATIVA DIRETTA MePA con PREZZO A CORPO</span></span>
-							<span class="form-control input-lg no-minwidth">
-							<input type="radio" name="tipo_ordine" value="0" class="tipo_ordine" <%if tipo_ordine=0 then response.write "checked"%> <%=disabled%>>
-							</span>
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<h2 class="checkout-title">Dati generali</h2>
 						</div>
-						<!-- End .input-group -->
-					</div>
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="input-group">
-							<span class="input-group-addon"><span class="input-text">ORDINE DIRETTO FUORI MePA</span></span>
-							<span class="form-control input-lg no-minwidth">
-							<input type="radio" name="tipo_ordine" value="1" class="tipo_ordine" <%if tipo_ordine=1 then response.write "checked"%> <%=disabled%>>
-							</span>
+					</div><!-- End .row -->
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="input-group">
+								<span class="input-group-addon"><span class="input-text">TRATTATIVA DIRETTA MePA con PREZZO A CORPO</span></span>
+								<span class="form-control input-lg no-minwidth">
+								<input type="radio" name="tipo_ordine" value="0" class="tipo_ordine" <%if tipo_ordine=0 then response.write "checked"%> <%=disabled%>>
+								</span>
+							</div>
+							<!-- End .input-group -->
 						</div>
-						<!-- End .input-group -->
-					</div>
-				</div><!-- End .row -->
-				<div class="alert alert-danger" role="alert" id="alert_tipo_ordine" <%=alert_display%>>
-					<strong>Avvertenza:</strong> concludere la procedura di stipula entro la data da voi fissata, altrimenti dovrete eseguire nuovamente il caricamento su MePA.
-				</div>
-							
-				<div class="row">
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="input-group">
-							<span class="input-group-addon"><span class="input-text">Cig</span></span>
-							<input type="text"  class="form-control input-lg" placeholder="" name="cig" value="<%=cig%>" <%=disabled%>>
-						</div><!-- End .input-group -->
-					</DIV><!-- col-md6 -->
-					<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="input-group">
-							<span class="input-group-addon"><span class="input-icon input-icon-user"></span><span class="input-text">Determinazione</span></span>
-							<input type="text"  class="form-control input-lg" placeholder="" name="determinazione" value="<%=determinazione%>" <%=disabled%>>
-						</div><!-- End .input-group -->
-					</DIV><!-- col-md6 -->
-				</div><!-- End .row -->
-				<div class="row">
-					<div class="col-md-12 col-sm-12 col-xs-12">
-						<div class="input-group textarea-container">
-							<span class="input-group-addon"><span class="input-text">Note</span></span>
-							<textarea name="note" id="contact-message" class="form-control" cols="30" rows="6" placeholder="" <%=disabled%>><%=note%></textarea>
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="input-group">
+								<span class="input-group-addon"><span class="input-text">ORDINE DIRETTO FUORI MePA</span></span>
+								<span class="form-control input-lg no-minwidth">
+								<input type="radio" name="tipo_ordine" value="1" class="tipo_ordine" <%if tipo_ordine=1 then response.write "checked"%> <%=disabled%>>
+								</span>
+							</div>
+							<!-- End .input-group -->
 						</div>
-					</div><!-- End .col-md-12 -->
-				</div><!-- End .row -->
-							
+					</div><!-- End .row -->
+					<div class="alert alert-danger" role="alert" id="alert_tipo_ordine" <%=alert_display%>>
+						<strong>Avvertenza:</strong> concludere la procedura di stipula entro la data da voi fissata, altrimenti dovrete eseguire nuovamente il caricamento su MePA.
+					</div>							
+					<div class="row">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="input-group">
+								<span class="input-group-addon"><span class="input-text">Cig</span></span>
+								<input type="text"  class="form-control input-lg" placeholder="" name="cig" value="<%=cig%>" <%=disabled%>>
+							</div><!-- End .input-group -->
+						</DIV><!-- col-md6 -->
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="input-group">
+								<span class="input-group-addon"><span class="input-icon input-icon-user"></span><span class="input-text">Determinazione</span></span>
+								<input type="text"  class="form-control input-lg" placeholder="" name="determinazione" value="<%=determinazione%>" <%=disabled%>>
+							</div><!-- End .input-group -->
+						</DIV><!-- col-md6 -->
+					</div><!-- End .row -->
+					<div class="row">
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="input-group textarea-container">
+								<span class="input-group-addon"><span class="input-text">Note</span></span>
+								<textarea name="note" id="contact-message" class="form-control" cols="30" rows="6" placeholder="" <%=disabled%>><%=note%></textarea>
+							</div>
+						</div><!-- End .col-md-12 -->
+					</div><!-- End .row -->
 				</fieldset>  	
-	
 				<div class="row" style="margin-top:15px;">
 					<div class="col-md-12 col-sm-12 col-xs-12">
 		<%
-			
-		
-			
 		    	'Query con scorta tecnica
 			    ' set rs_dipendenti=conn.execute ("(select dipendenti.iddip, cognome, nome,sesso from dipendenti inner join utenti_dipendenti on dipendenti.iddip = utenti_dipendenti.iddip where utenti_dipendenti.dimesso=0 and utenti_dipendenti.iduser="&iduser&" order by sesso desc, cognome,nome) union ( select 0 as iddip , 'Scorta tecnica' as cognome,'' as nome, 'A' as sesso ) order by sesso desc, cognome, nome")
 			    if boolcompleto then
@@ -239,18 +211,10 @@ end if%>
 				end if    
 			    if boolcompleto then
 					sql="select 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by "&orderby
-				else
-				
-				if idfoglio="" then idfoglio=0
-				sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by "&orderby
-				
-				
-				
-				
-				
-				'sql="select preferiti.idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo from preferiti INNER JOIN prodotti on preferiti.idpro=prodotti.idpro where preferiti.iduser="&iduser&" order by "& orderby
+				else				
+					if idfoglio="" then idfoglio=0
+					sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by "&orderby
 				end if
-					'if utente_andrea then response.write sql
 				set rs_prodotti=conn.execute(sql)
 			    if rs_prodotti.eof then
 				    visualizza_tabella=false
@@ -261,8 +225,7 @@ end if%>
 					    </p>    
 				     </div>
 				    <%
-				end if    
-	
+				end if    	
 			if visualizza_tabella then
 			    arrDipendenti=rs_dipendenti.getrows()
 				
