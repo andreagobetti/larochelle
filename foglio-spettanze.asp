@@ -227,191 +227,171 @@ end if%>
 				    <%
 				end if    	
 			if visualizza_tabella then
-			    arrDipendenti=rs_dipendenti.getrows()
-				
+			    arrDipendenti=rs_dipendenti.getrows()				
 			    ubound_arrDipendenti=ubound(arrDipendenti,2)
 				redim array_totali(ubound_arrDipendenti)
 				for n = 0 to ubound_arrDipendenti
 					array_totali(n)=0
 				Next	
-				importoTotale=0
-				
+				importoTotale=0				
 				if boolcompleto=false then
 	%>	
-	
-	<div class="col-md-12" style="border: 1px solid black; background: white; margin-bottom: 5px;">
-		Clicca sul nominativo dipendente per aggiungere le quantità<br>
-		<%
-		for n = 0 to ubound_arrDipendenti
-			if n>0 then response.write ",&nbsp;"
-			response.write "<a href=""quantitadipendente.asp?foglio="&idfoglio&"&iddip="&arrDipendenti(0,n)&""">"& nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))&"</a>"
-			
-		Next	
-
-			
-			%>
-	</div>
+			<div class="col-md-12" style="border: 1px solid black; background: white; margin-bottom: 5px;">
+				Clicca sul nominativo dipendente per aggiungere le quantità<br>
+				<%
+				for n = 0 to ubound_arrDipendenti
+					if n>0 then response.write ",&nbsp;"
+					response.write "<a href=""quantitadipendente.asp?foglio="&idfoglio&"&iddip="&arrDipendenti(0,n)&""">"& nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))&"</a>"
+					
+				Next			
+				%>
+			</div>
 	<%
 		end if
-		%>
-	
-	
-				<div class="dropdown pull-right" style="margin-bottom: 10px; " >
-				  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-				ORDINA PER    <span class="caret"></span>
-				  </button>
-				  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+	%>
+			<div class="dropdown pull-right" style="margin-bottom: 10px; " >
+				<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+					ORDINA PER    <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
 					<li><a href="<%=questofile%>?ordina=codice">Codice</a></li>
 					<li><a href="<%=questofile%>?ordina=articolo">Articolo</a></li>
 					<%if false then %>
-					<li role="separator" class="divider"></li>
-					<%if dividi_settori="si" then %>
-					<li><a href="<%=questofile%>?settori=no">Non dividere in categorie</a></li>
-					<% else %>
-					<li><a href="<%=questofile%>?settori=si">Dividi in categorie</a></li>
-					<%end if %>
-					<%end if %>
-				  </ul>
-				</div> 
-				</div><!-- col-md-12 -->
-				</div><!-- row -->
-					<div class="col-md-12" id="tablefull">
-						<a href="#" id="fullscreen" class="btn btn-info btn-xs">Modalità full-screen</A>
-									<table id="example" class="display" style="width: 100%;" name="tabella">
-										<thead>
-											<tr>
-												<th class="zindex500">Articolo</th>
-												<%
-												for n = 0 to ubound_arrDipendenti
-												%>
-												<th class="dipendenti" id="iddip<%=arrDipendenti(0,n)%>" ><span class="header_height"><a href="quantitadipendente.asp?foglio=<%=idfoglio%>&iddip=<%=arrDipendenti(0,n)%>"><%= nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))%></a></span></th>
-												<%
-												Next		            
-												%>
-										  </tr>
-									</thead>
-									<tbody>
-									<%
-													do while not rs_prodotti.EOF
-													html_riga=""
-														articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")&"</a>"
-														prezzo=cdbl(rs_prodotti("prezzo"))
-														quantita_tot=0
-														'Loop su dipendenti
-														for n = 0 to ubound_arrDipendenti
-															testocella=""
-															sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")&" and iddip="&arrDipendenti(0,n)
-															set rs_spettanze=conn.execute(sql)
-															if not rs_spettanze.eof then
-																quantita=rs_spettanze("quantita")
-																sub_totale=quantita*prezzo
-																array_totali(n)=array_totali(n)+sub_totale
-																importoTotale=importoTotale+sub_totale
-																'id=rs_spettanze("id")
-															else
-																quantita=0
-																'id=""
-															end if
-															if quantita=0 then quantita=""
-																
-															testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""" class=""spett"" "&disabled&"value="""&quantita&""">"'&id
-															
-															
-testocella=quantita
-															html_riga=html_riga&"<td  class=""quantita"" id=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""">"&testocella&"</td>"
-														Next	
-														%>
-													<tr >
-													
-													<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%><%if session("vedi_prezzi")=1 or utente_admin then %><span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span><%end if %></td>
-													<%=html_riga%>
-													
-													
-													</tr>
-													<%
-													rs_prodotti.MoveNext
-													Loop
-													
-													set rs_prodotti = Nothing
-									%>
-									
-									</tbody>
-									<%if session("vedi_prezzi")=1 or utente_admin then %>
-									<tfoot >
-										<tr class="totalidipendenti">
-											<td  >
-												<span>Totale iva esclusa per dipendente</span>
-											</td>
-													<%
-													for n = 0 to ubound_arrDipendenti
-														response.write "<td class=""quantita footer"" style=""font-size: smaller;""><span class=""footer_height"">"&simbolo_valuta&formatnumber(array_totali(n),2)&"</span></td>"
-													Next	
-													%>
-										</tr>
-									</tfoot>
-									<%end if %>
-									</table>
-						<%if session("iduser")=iduser and disabled=""  then %>
-							<div class="row" style="text-align: center;">
-									<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="margin-top:3px; margin-bottom:3px;">
-									<%if (boolcompleto <> true) then %>
-										<a href="pdf-foglio-spettanze.asp?idfoglio=<%=idfoglio%>&isbozza=1" class="btn btn-custom">Scarica BOZZA PDF</a> 
-									<%end if %>
-									<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="position:fixed;bottom:15px;left:15px;z-index:9999;">
-							</div><!-- row -->
+						<li role="separator" class="divider"></li>
+						<%if dividi_settori="si" then %>
+							<li><a href="<%=questofile%>?settori=no">Non dividere in categorie</a></li>
+						<% else %>
+							<li><a href="<%=questofile%>?settori=si">Dividi in categorie</a></li>
 						<%end if %>
-						<%if session("vedi_prezzi")=1 or utente_admin then %>
-							<table style="width:100%; margin-top: 10px;">
-											<%
-												trasporto=12
-												%>
-								<tr class="totali" style="border-top: 1px solid black;">
-									<td align="right"  width="90%"><strong>
-										Trasporto: </strong>
-									</td>
-									<td align="right" ><strong>
-									<%=simbolo_valuta&formatnumber(trasporto,2)%></strong>
-									</td>
-								</tr>
-										<%
-											importoTotale=importoTotale+trasporto
-											%>
-								<tr class="totali" style="border-top: 1px solid black;">
-									<td align="right"  ><strong>
-										Totale iva esclusa: </strong>
-									</td>
-									<td align="right" ><strong>
-										<%=simbolo_valuta&formatnumber(importoTotale,2)%></strong>
-									</td>
-								</tr>
-										<%
-											valore_iva=RoundUp(importoTotale*iva(date())/100, 2)
-											%>
-								<tr class="totali">
-									<td align="right" ><strong>
-										Iva <%=iva(date())%>%:</strong>
-									</td>
-									<td align="right" ><strong>
-										<%=simbolo_valuta&formatnumber(valore_iva,2)%></strong>
-									</td>
-								</tr>
-										<%
-											totale=importoTotale+valore_iva
-											%>
-								<tr class="totali">
-									<td align="right" ><strong>
-										Totale: </strong>
-									</td>
-									<td align="right" ><strong>
-										<%=simbolo_valuta&formatnumber(totale,2)%></strong>
-									</td>
-								</tr>
-								<tr id="avviso" style="display: none;">
-									<td align="center" colspan="2" >
-										I dati sono cambiati, salvare le modifiche per aggiornare i totali
-									</td>
-								</tr>
-							</table>
+					<%end if %>
+				</ul>
+			</div> 
+		</div><!-- col-md-12 -->
+	</div><!-- row -->
+	<div class="col-md-12" id="tablefull">
+		<a href="#" id="fullscreen" class="btn btn-info btn-xs">Modalità full-screen</A>
+					<table id="example" class="display" style="width: 100%;" name="tabella">
+						<thead>
+							<tr>
+								<th class="zindex500">Articolo</th>
+								<%
+								for n = 0 to ubound_arrDipendenti
+								%>
+								<th class="dipendenti" id="iddip<%=arrDipendenti(0,n)%>" ><span class="header_height"><a href="quantitadipendente.asp?foglio=<%=idfoglio%>&iddip=<%=arrDipendenti(0,n)%>"><%= nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))%></a></span></th>
+								<%
+								Next		            
+								%>
+							</tr>
+					</thead>
+					<tbody>
+					<%
+						do while not rs_prodotti.EOF
+						html_riga=""
+							articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")&"</a>"
+							prezzo=cdbl(rs_prodotti("prezzo"))
+							quantita_tot=0
+							'Loop su dipendenti
+							for n = 0 to ubound_arrDipendenti
+								sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")&" and iddip="&arrDipendenti(0,n)
+								set rs_spettanze=conn.execute(sql)
+								if not rs_spettanze.eof then
+									quantita=rs_spettanze("quantita")
+									sub_totale=quantita*prezzo
+									array_totali(n)=array_totali(n)+sub_totale
+									importoTotale=importoTotale+sub_totale
+								else
+									quantita=0
+								end if
+								if quantita=0 then quantita=""	
+								html_riga=html_riga&"<td  class=""quantita"" id=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""">"&quantita&"</td>"
+							Next	
+					%>
+									<tr>									
+									<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%><%if session("vedi_prezzi")=1 or utente_admin then %><span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span><%end if %></td>
+									<%=html_riga%>
+									</tr>
+					<%
+									rs_prodotti.MoveNext
+									Loop									
+									set rs_prodotti = Nothing
+					%>
+					</tbody>
+					<%if session("vedi_prezzi")=1 or utente_admin then %>
+					<tfoot >
+						<tr class="totalidipendenti">
+							<td  >
+								<span>Totale iva esclusa per dipendente</span>
+							</td>
+									<%
+									for n = 0 to ubound_arrDipendenti
+										response.write "<td class=""quantita footer"" style=""font-size: smaller;""><span class=""footer_height"">"&simbolo_valuta&formatnumber(array_totali(n),2)&"</span></td>"
+									Next	
+									%>
+						</tr>
+					</tfoot>
+					<%end if %>
+					</table>
+		<%if session("iduser")=iduser and disabled=""  then %>
+			<div class="row" style="text-align: center;">
+					<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="margin-top:3px; margin-bottom:3px;">
+					<%if (boolcompleto <> true) then %>
+						<a href="pdf-foglio-spettanze.asp?idfoglio=<%=idfoglio%>&isbozza=1" class="btn btn-custom">Scarica BOZZA PDF</a> 
+					<%end if %>
+					<input type="submit" name="aggiungi" class="btn btn-success" Value="Salva modifiche" style="position:fixed;bottom:15px;left:15px;z-index:9999;">
+			</div><!-- row -->
+		<%end if %>
+		<%if session("vedi_prezzi")=1 or utente_admin then %>
+			<table style="width:100%; margin-top: 10px;">
+							<%
+								trasporto=12
+								%>
+				<tr class="totali" style="border-top: 1px solid black;">
+					<td align="right"  width="90%"><strong>
+						Trasporto: </strong>
+					</td>
+					<td align="right" ><strong>
+					<%=simbolo_valuta&formatnumber(trasporto,2)%></strong>
+					</td>
+				</tr>
+						<%
+							importoTotale=importoTotale+trasporto
+							%>
+				<tr class="totali" style="border-top: 1px solid black;">
+					<td align="right"  ><strong>
+						Totale iva esclusa: </strong>
+					</td>
+					<td align="right" ><strong>
+						<%=simbolo_valuta&formatnumber(importoTotale,2)%></strong>
+					</td>
+				</tr>
+						<%
+							valore_iva=RoundUp(importoTotale*iva(date())/100, 2)
+							%>
+				<tr class="totali">
+					<td align="right" ><strong>
+						Iva <%=iva(date())%>%:</strong>
+					</td>
+					<td align="right" ><strong>
+						<%=simbolo_valuta&formatnumber(valore_iva,2)%></strong>
+					</td>
+				</tr>
+						<%
+							totale=importoTotale+valore_iva
+							%>
+				<tr class="totali">
+					<td align="right" ><strong>
+						Totale: </strong>
+					</td>
+					<td align="right" ><strong>
+						<%=simbolo_valuta&formatnumber(totale,2)%></strong>
+					</td>
+				</tr>
+				<tr id="avviso" style="display: none;">
+					<td align="center" colspan="2" >
+						I dati sono cambiati, salvare le modifiche per aggiornare i totali
+					</td>
+				</tr>
+			</table>
 							<%end if 
 								
 								
