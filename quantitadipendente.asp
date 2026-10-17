@@ -27,7 +27,7 @@ end if
 	sql="SELECT	utenti_foglio_spettanze.* FROM utenti_foglio_spettanze WHERE id="&idfoglio
 	set rs_foglio=conn.Execute(sql)
 	sql="" & _
-		"SELECT *                                                          " & _
+		"SELECT prodotti.*,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
 		"FROM prodotti                                                     " & _
 		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
 		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
@@ -70,16 +70,30 @@ end if
 							<tbody>
 							<%
 							do while not rs_prodotti.EOF
-								articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"" tabindex=""-1""  >"&rs_prodotti("codice")&" "&rs_prodotti("articolo")&"</a>"
-								sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")&" and iddip="&iddip
-															set rs_spettanze=conn.execute(sql)
-															if not rs_spettanze.eof then
-																quantita=rs_spettanze("quantita")
-															else
-																quantita=0
-															end if
-															if quantita=0 then quantita=""
-								testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
+								sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")
+								
+								articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"" tabindex=""-1""  >"&rs_prodotti("codice")&" "&rs_prodotti("articolo")
+								if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
+									articolo = articolo & "<br>"
+								end if
+								if Not IsNull(rs_prodotti("variante_a")) then
+									articolo = articolo & "<button type='button'>" & rs_prodotti("variante_a") & "</button> " 
+									sql=sql&" and IDvara="&rs_prodotti("IDvara")
+								end if
+								if Not IsNull(rs_prodotti("variante_b")) then	
+									articolo = articolo & "<button type='button'>" & rs_prodotti("variante_b") & "</button> " 
+									sql=sql&" and IDvarb="&rs_prodotti("IDvarb")
+								end if
+								articolo = articolo & "</a>"
+								sql=sql&" and iddip="&iddip
+								set rs_spettanze=conn.execute(sql)
+								if not rs_spettanze.eof then
+									quantita=rs_spettanze("quantita")
+								else
+									quantita=0
+								end if
+								if quantita=0 then quantita=""
+								testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
 							%>
 								<tr>
 									<td style="text-align: left;">
@@ -121,23 +135,44 @@ end if
 		iduser=session("iduser")
 		idfoglio=request("idfoglio")
 		iddip=request("iddip")
-		sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by prodotti.codice"
+		sql="" & _
+		"SELECT prodotti.*,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
+		"FROM prodotti                                                     " & _
+		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
+		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
+		"WHERE prodotti.idpro in (                                         " & _
+		"	SELECT idpro FROM `preferiti` WHERE iduser="&iduser&"          " & _
+		"	UNION                                                          " & _
+		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
+		")                                                                 " & _
+		" order by prodotti.codice"
 		Set rs_spettanza = Server.CreateObject("ADODB.Recordset")
 		set rs_prodotti=conn.execute(sql)
 		cisonoquantita=false
 		do while not rs_prodotti.EOF
 			modifiche_row=""
 			articolo="<b>"&rs_prodotti("codice")&"</b>"
+			IDvara=rs_prodotti("IDvara")
+			IDvarb=rs_prodotti("IDvarb")
 			idpro=rs_prodotti("idpro")
-			stringa=idpro&"_"&iddip
+			stringa=idpro&"_"&IDvara&"_"&IDvarb&"_"&iddip
 	        quantita=trim(request.form("quantita_"&stringa))
-			rs_spettanza.open "select * from  utenti_spettanze where idfoglio="&idfoglio&" and idpro="&idpro&" and iddip="&iddip,conn,3 ,3
+			sql2="select * from  utenti_spettanze where idfoglio="&idfoglio&" and idpro="&idpro&" and iddip="&iddip
+			if Not IsNull(IDvara) then
+				sql2=sql2&" and IDvara="&rs_prodotti("IDvara")
+			end if
+			if Not IsNull(IDvarb) then	
+				sql2=sql2&" and IDvarb="&rs_prodotti("IDvarb")
+			end if
+			rs_spettanza.open sql2,conn,3 ,3
 			if quantita<>"" and quantita<>"0" and isnumeric(quantita) then
 				cisonoquantita=true
 				if rs_spettanza.eof then
 					modifiche_row=modifiche_row&" aggiungo "&quantita&" per "&dipendente
 					rs_spettanza.addnew
 					rs_spettanza("idpro")=idpro
+					rs_spettanza("IDvara")=IDvara
+					rs_spettanza("IDvarb")=IDvarb
 					rs_spettanza("iddip")=iddip
 					rs_spettanza("iduser")=iduser
 					rs_spettanza("quantita")=quantita
