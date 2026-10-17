@@ -213,7 +213,17 @@ end if%>
 					sql="select 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by "&orderby
 				else				
 					if idfoglio="" then idfoglio=0
-					sql="select * from prodotti where idpro in (  SELECT idpro FROM `preferiti` WHERE iduser="&iduser&" union distinct select idpro from utenti_spettanze where idfoglio="&idfoglio&") order by "&orderby
+					sql="" & _
+						"SELECT prodotti.*,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
+						"FROM prodotti                                                     " & _
+						"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
+						"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
+						"WHERE prodotti.idpro in (                                         " & _
+						"	SELECT idpro FROM `preferiti` WHERE iduser="&iduser&"          " & _
+						"	UNION                                                          " & _
+						"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
+						")                                                                 " & _
+						" order by "&orderby
 				end if
 				set rs_prodotti=conn.execute(sql)
 			    if rs_prodotti.eof then
@@ -242,7 +252,6 @@ end if%>
 				for n = 0 to ubound_arrDipendenti
 					if n>0 then response.write ",&nbsp;"
 					response.write "<a href=""quantitadipendente.asp?foglio="&idfoglio&"&iddip="&arrDipendenti(0,n)&""">"& nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))&"</a>"
-					
 				Next			
 				%>
 			</div>
@@ -293,6 +302,12 @@ end if%>
 							'Loop su dipendenti
 							for n = 0 to ubound_arrDipendenti
 								sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")&" and iddip="&arrDipendenti(0,n)
+								if Not IsNull(rs_prodotti("variante_a")) then
+									sql=sql&" and IDvara="&rs_prodotti("IDvara")
+								end if
+								if Not IsNull(rs_prodotti("variante_b")) then	
+									sql=sql&" and IDvarb="&rs_prodotti("IDvarb")
+								end if
 								set rs_spettanze=conn.execute(sql)
 								if not rs_spettanze.eof then
 									quantita=rs_spettanze("quantita")
