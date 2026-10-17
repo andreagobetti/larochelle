@@ -465,91 +465,83 @@ end if%>
 
 <script type="text/javascript" src="Jquery/Js/screenfull.min.js"></script>
 <script type="text/javascript">
-      $(function() {	      
- 		$('#fullscreen').click(function () {
+    $(function() {	      
+		$('#fullscreen').click(function () {
 			screenfull.toggle($('#tablefull')[0]);
 		});
-	  screenfull.on('change', function(){
-		  console.log("#tablefull.height:"+$("#tablefull").height());
-	  });	      
-  	$(".quantita").hover(function(){		
-		$('.articoli').each(function(i, obj) {
-			$(obj).css('background','');			
-		});
-		$('.dipendenti').each(function(i, obj) {
-			$(obj).css('background','');			
-		});			
-		var string=$(this).attr('id');
-		console.log("string:"+string);		
-		var array = string.split('_');
-		var idpro=array[1];
-		var iddip=array[2];  	
-		console.log("idpro:"+idpro+" iddip:"+iddip);
-		$(".idpro"+idpro).each(function(i, obj) {
-			$(obj).css("background",'#dfff26');
-			console.log("trovato"+idpro);
-		});
-		$("#iddip"+iddip).css("background",'#dfff26');
-	});
-	$(".tipo_ordine").click(function(){		
-	if($(this).val()=="0"){
-		$("#alert_tipo_ordine").slideDown();
-	}else
-		$("#alert_tipo_ordine").slideUp();
-	});	      
-	var header_height = 0;
-    $('.header_height').each(function() {
-        if ($(this).outerWidth() > header_height){
-	        header_height = $(this).outerWidth();
-        } 
-    });
-    $('table th').height(header_height);
-	var footer_height = 0;
-    $('.footer_height').each(function() {
-        if ($(this).outerWidth() > footer_height){
-	        footer_height = $(this).outerWidth();
-        } 
-    });
-	$('.footer').height(footer_height);
-    $('form').dirtyForms({
-		ignoreSelector: '#fullscreen',
-		message: 'Hai modificato dei dati ma non hai salvato le modifiche, se lasci la pagina le modifiche andranno perse.<br>Sei sicuro di voler abbandonare la pagina?',
-		dialog: {
-		title: 'Avvertenza',
-		proceedButtonText:'Lascia la pagina',
-		stayButtonText:'Rimani'
-	}});
-	var hidden=false;
-	$(document).bind('dirty.dirtyforms', function(event) { 
-		if(!hidden){
-			$(".totali").hide();
-			$(".totalidipendenti").each(function(e){
-				$(this).hide();
+  		$(".quantita").hover(function(){
+			$('.articoli').each(function(i, obj) {
+				$(obj).css('background','');			
 			});
-			$("#avviso").show();
-			hidden=true;
-		}
-	});
-		
+			$('.dipendenti').each(function(i, obj) {
+				$(obj).css('background','');			
+			});			
+			var string=$(this).attr('id');
+			console.log("string:"+string);		
+			var array = string.split('_');
+			var idpro=array[1];
+			var iddip=array[2];  	
+			console.log("idpro:"+idpro+" iddip:"+iddip);
+			$(".idpro"+idpro).each(function(i, obj) {
+				$(obj).css("background",'#dfff26');
+				console.log("trovato"+idpro);
+			});
+			$("#iddip"+iddip).css("background",'#dfff26');
+		});
+		$(".tipo_ordine").click(function(){
+			if($(this).val()=="0"){
+				$("#alert_tipo_ordine").slideDown();
+			}else
+				$("#alert_tipo_ordine").slideUp();
+		});	      
+		var header_height = 0;
+		$('.header_height').each(function() {
+			if ($(this).outerWidth() > header_height){
+				header_height = $(this).outerWidth();
+			} 
+		});
+		$('table th').height(header_height);
+		var footer_height = 0;
+		$('.footer_height').each(function() {
+			if ($(this).outerWidth() > footer_height){
+				footer_height = $(this).outerWidth();
+			} 
+		});
+		$('.footer').height(footer_height);
+		$('form').dirtyForms({
+			ignoreSelector: '#fullscreen',
+			message: 'Hai modificato dei dati ma non hai salvato le modifiche, se lasci la pagina le modifiche andranno perse.<br>Sei sicuro di voler abbandonare la pagina?',
+			dialog: {
+			title: 'Avvertenza',
+			proceedButtonText:'Lascia la pagina',
+			stayButtonText:'Rimani'
+		}});
+		var hidden=false;
+		$(document).bind('dirty.dirtyforms', function(event) { 
+			if(!hidden){
+				$(".totali").hide();
+				$(".totalidipendenti").each(function(e){
+					$(this).hide();
+				});
+				$("#avviso").show();
+				hidden=true;
+			}
+		});		
 		var table = $('#example').DataTable( {
 			"ordering": false,
-	        "info":     false,
-	         "searching": false,
-	        //scrollY:        "500px",
-	        scrollY:        "70vh",
-	        scrollX:        true,
-	        scrollCollapse: true,
-	        paging:         false,
-	        fixedColumns:   {
-	            leftColumns: 1
-	        }
-	    } );
+			"info":     false,
+				"searching": false,
+			//scrollY:        "500px",
+			scrollY:        "70vh",
+			scrollX:        true,
+			scrollCollapse: true,
+			paging:         false,
+			fixedColumns:   {
+				leftColumns: 1
+			}
+		} );
 	    $("#example tfoot").remove();
-		
-	});
-    
-	                
-	                
+	}); 
     </script>
     </body>
 </html>
@@ -565,47 +557,32 @@ function classe_articolo(quantita,tot_in_ordine,tot_pronto,tot_consegnato)
 		classe_articolo="in_ordines"
 	end if
 end function
-	 sub aggiorna_spettanze()
-		 
-		 
-		 completato=false
-		 
-		 
-		completo=false
-		sql="select count(*) from utenti_spettanze where idfoglio="&idfoglio
-		
-		cisonoquantita=clng(conn.Execute(sql)(0))
-		if cisonoquantita=0 then
-			session("errore")="Non ci sono quantit&agrave; caricate"
-
-		end if
-		Set rs_spettanza = Server.CreateObject("ADODB.Recordset")
-
-		rs_spettanza.open "select * from utenti_foglio_spettanze where id="&idfoglio,conn,3 ,3
-		rs_spettanza("tipo_ordine")=cint(request.form("tipo_ordine"))
-		rs_spettanza("cig")=request.form("cig")
-		rs_spettanza("determinazione")=request.form("determinazione")
-	    m_log_txt=m_log_txt&"<br>determinazione:"&request.form("determinazione")
-		rs_spettanza("note")=request.form("note")
-
-		if request.form("completa")<>"" and cisonoquantita>0 then
-			rs_spettanza("completo")=date()		
-			completo=true	
-		end if
-		rs_spettanza.update
-		rs_spettanza.close
-
-		set rs_spettanza = Nothing
-		
-		
-		
-		call add2log(m_log_txt&" su foglio:"&idfoglio,0)
-		if completo then
-			denominazione_v=get_denominazione(iduser)
-			call inserisci_appunto("<a href=""pag_adm_user.asp?iduser="&iduser&"""><b>"&denominazione_v&"</b></a> ha completato il foglio spettanze "&idfoglio,array(4,1))
-		end if
-		
-		
-	end sub	'aggiungi_spettanze()
-	
+sub aggiorna_spettanze()
+	completato=false
+	completo=false
+	sql="select count(*) from utenti_spettanze where idfoglio="&idfoglio
+	cisonoquantita=clng(conn.Execute(sql)(0))
+	if cisonoquantita=0 then
+		session("errore")="Non ci sono quantit&agrave; caricate"
+	end if
+	Set rs_spettanza = Server.CreateObject("ADODB.Recordset")
+	rs_spettanza.open "select * from utenti_foglio_spettanze where id="&idfoglio,conn,3 ,3
+	rs_spettanza("tipo_ordine")=cint(request.form("tipo_ordine"))
+	rs_spettanza("cig")=request.form("cig")
+	rs_spettanza("determinazione")=request.form("determinazione")
+	m_log_txt=m_log_txt&"<br>determinazione:"&request.form("determinazione")
+	rs_spettanza("note")=request.form("note")
+	if request.form("completa")<>"" and cisonoquantita>0 then
+		rs_spettanza("completo")=date()		
+		completo=true	
+	end if
+	rs_spettanza.update
+	rs_spettanza.close
+	set rs_spettanza = Nothing
+	call add2log(m_log_txt&" su foglio:"&idfoglio,0)
+	if completo then
+		denominazione_v=get_denominazione(iduser)
+		call inserisci_appunto("<a href=""pag_adm_user.asp?iduser="&iduser&"""><b>"&denominazione_v&"</b></a> ha completato il foglio spettanze "&idfoglio,array(4,1))
+	end if
+end sub
 %>
