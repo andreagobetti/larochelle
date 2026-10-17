@@ -1,6 +1,3 @@
-<%
-'Verifica chiusure 30_11_2015
-%>
 <!--#include virtual="/setup.asp" -->
 <%
 iduser=session("iduser")
@@ -10,8 +7,8 @@ if request.form("salva")<>"" then
 	Call aggiorna()
 	end if
 Set rs_dipendenti=conn.Execute("select * from dipendenti where iddip="&iddip)
-foglio_spettanze=true
 nominativodip=rs_dipendenti("cognome")&" "&rs_dipendenti("nome")
+foglio_spettanze=true
 ordinaper=Request.Cookies("/foglio-spettanze.asp")("ordina")
 if ordinaper="codice" then
 	orderby="codice"
@@ -107,10 +104,8 @@ end if
 								set rs_prodotti = Nothing
 								%>
 							</tbody>
-						</table>
-							
-					</div><!-- End .table-reponsive -->
-	
+						</table>							
+					</div><!-- End .table-reponsive -->	
 				</div><!-- End .col-md-12 -->
 			</div><!-- End .row -->
 			<div class="row" style="margin-top:10px;">
