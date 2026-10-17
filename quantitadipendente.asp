@@ -33,7 +33,10 @@ end if
 		"	SELECT idpro FROM `preferiti` WHERE iduser="&iduser&"          " & _
 		"	UNION                                                          " & _
 		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
-		") order by "&orderby
+		")                                                                 " & _
+		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
+		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
+		" order by "&orderby
 	set rs_prodotti=conn.execute(sql)
 %>
 <!--#include virtual="/config/header_inc.asp" -->
