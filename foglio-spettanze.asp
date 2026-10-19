@@ -294,17 +294,6 @@ end if%>
 					<%
 						do while not rs_prodotti.EOF
 							html_riga=""
-							articolo = "<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")
-							if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
-								articolo = articolo & "<br>"
-							end if
-							if Not IsNull(rs_prodotti("variante_a")) then
-								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_a") & "</button> " 
-							end if
-							if Not IsNull(rs_prodotti("variante_b")) then	
-								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_b") & "</button> " 
-							end if
-							articolo = articolo & "</a>"
 							prezzo=cdbl(rs_prodotti("prezzo"))
 							quantita_tot=0
 							'Loop su dipendenti
@@ -325,18 +314,38 @@ end if%>
 								else
 									quantita=0
 								end if
+								quantita_tot = quantita_tot + quantita
 								if quantita=0 then quantita=""	
 								html_riga=html_riga&"<td class=""quantita"" id=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""">"&quantita&"</td>"
-							Next	
+							Next
+							has_variants = 0
+							if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
+								has_variants = 1
+							end if
+							articolo = "<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")
+							
+							'adding variants if needed
+							if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
+								articolo = articolo & "<br>"
+							end if
+							if Not IsNull(rs_prodotti("variante_a")) then
+								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_a") & "</button> " 
+							end if
+							if Not IsNull(rs_prodotti("variante_b")) then	
+								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_b") & "</button> " 
+							end if
+							articolo = articolo & "</a>"	
 					%>
-						<tr>									
-							<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%>
-								<%if session("vedi_prezzi")=1 or utente_admin then %>
-									<span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span>
-								<%end if %>
-							</td>
-						<%=html_riga%>
-						</tr>
+						<%if quantita_tot>0 or has_variants=0 then %>
+							<tr>									
+								<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%>
+									<%if session("vedi_prezzi")=1 or utente_admin then %>
+										<span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span>
+									<%end if %>
+								</td>
+							<%=html_riga%>
+							</tr>
+						<%end if %>
 					<%
 						rs_prodotti.MoveNext
 						Loop									
@@ -435,46 +444,40 @@ end if%>
 			<%
 				end if
 			%>
-
-							<div class="row" style="margin-top:10px;">
-								<%if session("iduser")=iduser and disabled="" then %>
-									<div class="col-md-2 col-sm-2 col-xs-12 " style="text-align: center;">
-										<input type="submit" class="btn btn-info" name="completa" value="COMPLETA e SCARICA PDF"/>
-									</div><!-- col-md-2 -->
-									<div class="col-md-10 col-sm-10 col-xs-12">
-										<div class="alert alert-info" role="alert"> <strong>Attenzione:</strong> Premendo sul pulsante COMPLETA le modifiche al foglio spettanze verranno disabilitate. Non potranno pi&ugrave; essere effettuate modifiche ai dati della tabella.<br>Sar&agrave; possibile scaricare il foglio in formato PDF che dovrete inviarci via email.<br>
-											<ul>
-												<li>In caso di <b>ORDINE DIRETTO</b> dovrete allegare i dati relativi all’impegno di spesa e copia della DETERMINAZIONE</li>
-												<li>In caso di <b>TRATTATIVA DIRETTA MePA (cod. LR2500)</b> potete allegare il PDF per indicare l’importo base a corpo</li>
-											</ul>
-												
-										 </div><!-- alert -->
-									</div><!-- col-md-10 -->
-								<% end if %>
-							</div><!-- row -->
-							
-							<div class="row" style="margin-top:10px;">
-								<%if (session("iduser")=iduser and disabled="") or utente_admin then %>
-									<div class="col-md-2 col-sm-2 col-xs-12 " style="text-align: center;">
-										<input type="submit" class="btn btn-danger" name="elimina" value="Elimina"/>
-									</div><!-- col-md-2 -->
-									<div class="col-md-10 col-sm-10 col-xs-12">
-										<div class="alert alert-danger" role="alert"> <strong>Attenzione:</strong> Questa operazione è irreversibile.												
-										 </div><!-- alert -->
-									</div><!-- col-md-10 -->
-								<% end if %>
-							</div><!-- row -->
-
-							
-							
+			<div class="row" style="margin-top:10px;">
+				<%if session("iduser")=iduser and disabled="" then %>
+					<div class="col-md-2 col-sm-2 col-xs-12 " style="text-align: center;">
+						<input type="submit" class="btn btn-info" name="completa" value="COMPLETA e SCARICA PDF"/>
+					</div><!-- col-md-2 -->
+					<div class="col-md-10 col-sm-10 col-xs-12">
+						<div class="alert alert-info" role="alert"> <strong>Attenzione:</strong> Premendo sul pulsante COMPLETA le modifiche al foglio spettanze verranno disabilitate. Non potranno pi&ugrave; essere effettuate modifiche ai dati della tabella.<br>Sar&agrave; possibile scaricare il foglio in formato PDF che dovrete inviarci via email.<br>
+							<ul>
+								<li>In caso di <b>ORDINE DIRETTO</b> dovrete allegare i dati relativi all’impegno di spesa e copia della DETERMINAZIONE</li>
+								<li>In caso di <b>TRATTATIVA DIRETTA MePA (cod. LR2500)</b> potete allegare il PDF per indicare l’importo base a corpo</li>
+							</ul>
+								
+							</div><!-- alert -->
+					</div><!-- col-md-10 -->
+				<% end if %>
+			</div><!-- row -->							
+			<div class="row" style="margin-top:10px;">
+				<%if (session("iduser")=iduser and disabled="") or utente_admin then %>
+					<div class="col-md-2 col-sm-2 col-xs-12 " style="text-align: center;">
+						<input type="submit" class="btn btn-danger" name="elimina" value="Elimina"/>
+					</div><!-- col-md-2 -->
+					<div class="col-md-10 col-sm-10 col-xs-12">
+						<div class="alert alert-danger" role="alert"> <strong>Attenzione:</strong> Questa operazione è irreversibile.												
+							</div><!-- alert -->
+					</div><!-- col-md-10 -->
+				<% end if %>
+			</div><!-- row -->
 				<%end if
 					set rs = Nothing
 					call connclose()
-		 %>
-					</div><!-- #tablefull -->
+		 		%>
+			</div><!-- #tablefull -->
 		</form>
 	</div>
-			
 </section>
 	<!--#include virtual="/footer_inc.asp" -->
     <!-- END -->

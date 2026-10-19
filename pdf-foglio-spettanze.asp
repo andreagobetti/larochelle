@@ -198,12 +198,18 @@ for ciclo = 1 to cicli
 		"FROM prodotti                                                     " & _
 		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
 		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
-		"WHERE prodotti.idpro in (                                         " & _
-		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
-		")                                                                 " & _
-		" order by codice"
+		"JOIN utenti_spettanze AS u_s                                      " & _
+		"ON u_s.idpro=prodotti.idpro  									   " & _
+		"AND u_s.idfoglio="&idfoglio&"                                     " & _                                    
+		"AND (varianti_a.IDvara IS NULL OR u_s.IDvara=varianti_a.IDvara)   " & _                                 
+		"AND (varianti_b.IDvarb IS NULL OR u_s.IDvarb=varianti_b.IDvarb)   " & _
+		"ORDER BY codice"
 	set rs_prodotti=conn.execute(sql)
 	do while not rs_prodotti.eof 
+		has_variants = 0
+		if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
+			has_variants = 1
+		end if
 		Set Row = tabellaArticoli.Rows.Add(30) ' row height
 		with row
 			articolo=rs_prodotti("codice")&" "&rs_prodotti("articolo")
