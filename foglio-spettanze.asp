@@ -191,9 +191,7 @@ end if%>
 				<div class="row" style="margin-top:15px;">
 					<div class="col-md-12 col-sm-12 col-xs-12">
 		<%
-		    	'Query con scorta tecnica
-			    ' set rs_dipendenti=conn.execute ("(select dipendenti.iddip, cognome, nome,sesso from dipendenti inner join utenti_dipendenti on dipendenti.iddip = utenti_dipendenti.iddip where utenti_dipendenti.dimesso=0 and utenti_dipendenti.iduser="&iduser&" order by sesso desc, cognome,nome) union ( select 0 as iddip , 'Scorta tecnica' as cognome,'' as nome, 'A' as sesso ) order by sesso desc, cognome, nome")
-			    if boolcompleto then
+		    	if boolcompleto then
 					sql="select dipendenti.iddip, cognome, nome, sesso from dipendenti inner join (select distinct iddip from utenti_spettanze where idfoglio= "&idfoglio&") as t on dipendenti.iddip = t.iddip  order by  cognome, nome"
 			    else
 				   sql= "select dipendenti.iddip, cognome, nome,sesso from dipendenti inner join utenti_dipendenti on dipendenti.iddip = utenti_dipendenti.iddip where utenti_dipendenti.dimesso=0 and utenti_dipendenti.iduser="&session("iduserDipendenti")&" order by cognome,nome"
@@ -296,7 +294,17 @@ end if%>
 					<%
 						do while not rs_prodotti.EOF
 							html_riga=""
-							articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")&"</a>"
+							articolo = "<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")
+							if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
+								articolo = articolo & "<br>"
+							end if
+							if Not IsNull(rs_prodotti("variante_a")) then
+								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_a") & "</button> " 
+							end if
+							if Not IsNull(rs_prodotti("variante_b")) then	
+								articolo = articolo & "<button type='button'>" & rs_prodotti("variante_b") & "</button> " 
+							end if
+							articolo = articolo & "</a>"
 							prezzo=cdbl(rs_prodotti("prezzo"))
 							quantita_tot=0
 							'Loop su dipendenti
@@ -338,7 +346,7 @@ end if%>
 					<%if session("vedi_prezzi")=1 or utente_admin then %>
 					<tfoot >
 						<tr class="totalidipendenti">
-							<td  >
+							<td>
 								<span>Totale iva esclusa per dipendente</span>
 							</td>
 							<%
@@ -361,9 +369,9 @@ end if%>
 		<%end if %>
 		<%if session("vedi_prezzi")=1 or utente_admin then %>
 			<table style="width:100%; margin-top: 10px;">
-							<%
-								trasporto=12
-								%>
+				<%
+					trasporto=12
+				%>
 				<tr class="totali" style="border-top: 1px solid black;">
 					<td align="right"  width="90%"><strong>
 						Trasporto: </strong>
@@ -372,9 +380,9 @@ end if%>
 					<%=simbolo_valuta&formatnumber(trasporto,2)%></strong>
 					</td>
 				</tr>
-						<%
-							importoTotale=importoTotale+trasporto
-							%>
+				<%
+					importoTotale=importoTotale+trasporto
+				%>
 				<tr class="totali" style="border-top: 1px solid black;">
 					<td align="right"  ><strong>
 						Totale iva esclusa: </strong>
@@ -383,9 +391,9 @@ end if%>
 						<%=simbolo_valuta&formatnumber(importoTotale,2)%></strong>
 					</td>
 				</tr>
-						<%
-							valore_iva=RoundUp(importoTotale*iva(date())/100, 2)
-							%>
+				<%
+					valore_iva=RoundUp(importoTotale*iva(date())/100, 2)
+				%>
 				<tr class="totali">
 					<td align="right" ><strong>
 						Iva <%=iva(date())%>%:</strong>
@@ -394,9 +402,9 @@ end if%>
 						<%=simbolo_valuta&formatnumber(valore_iva,2)%></strong>
 					</td>
 				</tr>
-						<%
-							totale=importoTotale+valore_iva
-							%>
+				<%
+					totale=importoTotale+valore_iva
+				%>
 				<tr class="totali">
 					<td align="right" ><strong>
 						Totale: </strong>
@@ -411,27 +419,22 @@ end if%>
 					</td>
 				</tr>
 			</table>
-							<%end if 
-								
-								
-												if boolcompleto=false then
-	%>	
-	
-	<div class="col-md-12" style="border: 1px solid black; background: white; margin-bottom: 5px; margin-top:10px;">
-		Clicca sul nominativo dipendente per aggiungere le quantità<br>
-		<%
-		for n = 0 to ubound_arrDipendenti
-			if n>0 then response.write ",&nbsp;"
-			response.write "<a href=""quantitadipendente.asp?foglio="&idfoglio&"&iddip="&arrDipendenti(0,n)&""">"& nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))&"</a>"
-			
-		Next	
-
-			
+			<%
+			end if
+			if boolcompleto=false then
+			%>	
+			<div class="col-md-12" style="border: 1px solid black; background: white; margin-bottom: 5px; margin-top:10px;">
+				Clicca sul nominativo dipendente per aggiungere le quantità<br>
+				<%
+				for n = 0 to ubound_arrDipendenti
+					if n>0 then response.write ",&nbsp;"
+					response.write "<a href=""quantitadipendente.asp?foglio="&idfoglio&"&iddip="&arrDipendenti(0,n)&""">"& nominativo_breve(arrDipendenti(1,n),arrDipendenti(2,n))&"</a>"
+				Next	
+				%>
+			</div>
+			<%
+				end if
 			%>
-	</div>
-	<%
-		end if
-		%>
 
 							<div class="row" style="margin-top:10px;">
 								<%if session("iduser")=iduser and disabled="" then %>
@@ -549,8 +552,7 @@ end if%>
 		var table = $('#example').DataTable( {
 			"ordering": false,
 			"info":     false,
-				"searching": false,
-			//scrollY:        "500px",
+			"searching": false,
 			scrollY:        "70vh",
 			scrollX:        true,
 			scrollCollapse: true,
@@ -560,6 +562,7 @@ end if%>
 			}
 		} );
 	    $("#example tfoot").remove();
+		document.querySelector("div.dataTables_scrollBody").style.width='1125px';
 	}); 
     </script>
     </body>
