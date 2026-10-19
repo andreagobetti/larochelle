@@ -208,7 +208,7 @@ end if%>
 				    <%
 				end if    
 			    if boolcompleto then
-					sql="select 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by "&orderby
+					sql="select prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo, NULL AS IDvara, NULL AS IDvarb,NULL AS variante_a,NULL AS variante_b from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by "&orderby
 				else				
 					if idfoglio="" then idfoglio=0
 					sql="" & _

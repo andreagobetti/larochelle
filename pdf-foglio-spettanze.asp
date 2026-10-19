@@ -194,7 +194,7 @@ for ciclo = 1 to cicli
 	End With
 	parametri_titolo="size=5; alignment=2;"
 	sql="" & _
-		"SELECT 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
+		"SELECT DISTINCT prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
 		"FROM prodotti                                                     " & _
 		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
 		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
