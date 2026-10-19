@@ -1,19 +1,11 @@
 <%
-
 'Verifica chiusure 30_11_2015
-
 'Migliorabile con getrows su rs
-
 %>
-
 <!--#include virtual="/setup.asp" -->
-
 <!--#include virtual="/pag_adm_ordini_inc.asp" -->
-
 <!--#include file="jsonObject.class.asp"-->
-
 <%
-
 '---------------------------------------------	
 'V3.00 genera più pagine
 '---------------------------------------------
@@ -389,251 +381,106 @@ for ciclo = 1 to cicli
 				'altezza delle altre righe
 				start_Y=start_Y-tabellaArticoli.rows(n).height+1
 			next
-
 			redim Preserve lettera_pagina(doc.pages.count)
-
-			'lettera_pagina(doc.pages.count)=chr(ciclo+64)
-
 			lettera_pagina(doc.pages.count)=nominativiPagina
-
-			
-
 			Exit Do ' entire table displayed
-
 		end if
-
 		redim Preserve lettera_pagina(doc.pages.count)
-
-		'lettera_pagina(doc.pages.count)=chr(ciclo+64)
-
 		lettera_pagina(doc.pages.count)=nominativiPagina
-
 		' Display remaining part of table on the next page
-
 		Set Page = Page.NextPage
-
-  
-
-	   Param.Add( "RowTo=1; RowFrom=1" ) ' Row 1 is header.
-
-	   Param("RowFrom1") = LastRow + 1 ' RowTo1 is omitted and presumed infinite
-
-	   FirstRow = LastRow + 1
-
-	   
-
-	   
-
-	   pagina=pagina+1
-
+	    Param.Add( "RowTo=1; RowFrom=1" ) ' Row 1 is header.
+	    Param("RowFrom1") = LastRow + 1 ' RowTo1 is omitted and presumed infinite
+	    FirstRow = LastRow + 1
+	    pagina=pagina+1
 	Loop
-
 	Y_timbro=start_Y
-
 	Y_timbro=Y_timbro-nuova_altezza-5 '5 Margine
-
 	if Y_timbro<0 then
-
 		Set Page = Doc.Pages.Add (792,612)
-
 		redim Preserve lettera_pagina(doc.pages.count)
-
 		lettera_pagina(doc.pages.count)="Totali"
-
-	   pagina=pagina+1
-
-	   Y_timbro=page.height-75-nuova_altezza-5 '5 Margine
-
+	    pagina=pagina+1
+	    Y_timbro=page.height-75-nuova_altezza-5 '5 Margine
 	end if
-
-	
-
 	parametri_timbro="x="&param_x&"; y="&Y_timbro&"; ScaleX="&param_ScaleX&"; ScaleY="&param_ScaleY&";"
-
 	parametri_timbro=replace(parametri_timbro,",",".")
-
 	if IsObject(timbro) then
-
 		Page.Canvas.DrawImage timbro, parametri_timbro
-
 	end if
-
 	Page.Canvas.DrawText "<b>Nell'attesa di un vostro cenno di riscontro porgiamo cordiali saluti.</b>",  "x="&margine_x&"; y="&start_Y-10&"; width=350; alignment=center; size=10; html=true", doc.fonts("Arial")
-
-	
-
 	if ciclo=cicli then
-
 		Y_tabella_footer=Y_timbro
-
-	
-
 		Y_min_tabella_footer=Y_tabella_footer-tabellaFooter.height-30	'30 altezza testo dati azienda
-
-	
-
 		if Y_min_tabella_footer<0 then
-
 			Set Page = Doc.Pages.Add (792,612)
-
 			redim Preserve lettera_pagina(doc.pages.count)
-
 			lettera_pagina(doc.pages.count)="Totali"
-
-		   pagina=pagina+1
-
-		   Y_tabella_footer=page.height-75
-
+ 		    pagina=pagina+1
+ 		    Y_tabella_footer=page.height-75
 		end if
-
-	
-
 		Y_tabella_footer=replace(Y_tabella_footer,",",".")
-
 		Page.Canvas.DrawTable tabellaFooter, "x=20, y="&Y_tabella_footer
-
 	end if
-
 	'Cicli successivi imposto inizio pagina a ultima pagina ciclo precedente +1
-
 	if start_Pagina>1 then
-
 		start_Pagina=pagine+1
-
 	end if
-
-
-
-	
-
 	pagine=doc.pages.count
-
-
-
 	for pagina=start_Pagina to pagine
-
 		Set Page = Doc.Pages.item(pagina)
-
 		Page.Canvas.DrawTable tabella_titolo, "x="&tabella_titolo_X&", y="&replace(tabella_titolo_Y,",",".")
-
 		if isobject(logo) then
-
 			Page.Canvas.DrawImage logo, parametri_logo
-
 		end if
-
 		if pagina=1 then
-
 			Page.Canvas.DrawTable tabDatiGenerali, "x="&margine_x&", y="&replace(tabella_accessori_Y,",",".")
-
 		end if
-
 	next
-
-	
-
 next
-
 'Numero tutte le pagine
-
 for pagina=1 to pagine
-
 	Set Page = Doc.Pages.item(pagina)
-
 	Page.Canvas.DrawText fondo_listino,  "x="&(page.width-350)/2&"; y=25; width=350; alignment=center; size=8;html=true", doc.fonts("Arial")
-
-	
-
 	if cicli>1 then
-
-	
-
 		testoPagina="Pagina "&pagina&" da "&lettera_pagina(pagina)&" di "&pagine
-
 	else
-
 		testoPagina="Pagina "&pagina&" di "&pagine
-
 	end if
-
 	width=page.width/2-margine_x
-
 	Page.Canvas.DrawText testoPagina, "X="&replace(width+margine_x,",",".")&"; Y=20; Alignment=1; width="&replace(width,",",".")&"; size=8;" , doc.fonts("Arial")
-
 	Page.Canvas.DrawText "Validità offerta 60 giorni", "X="&replace("-280",",",".")&"; Y=20; Alignment=1; width="&replace(width,",",".")&"; size=8;" , doc.fonts("Arial")
-
 next
-
 set rs_rilievi = Nothing
-
 set rs_dipendenti = Nothing
-
 call connclose()
-
-
-
-
-
-
 if (isBozza<>"1") then
-
-Doc.SaveHttp "attachment;filename=Richiesta_fornitura.pdf" 
-
+	Doc.SaveHttp "attachment;filename=Richiesta_fornitura.pdf" 
 else
-
-' Open the image you want to use as a background
-Set Image = Doc.OpenImage(Server.MapPath("/public/files/bozza.png"))
-
-' Apply to all pages in the document
-For Each Page in Doc.Pages
-    Page.Background.DrawImage Image, "x=0, y=0; scalex=1; scaley=1"
-Next
-
-Doc.SaveHttp "attachment;filename=BOZZA_richiesta_fornitura.pdf" 
-
+	' Open the image you want to use as a background
+	Set Image = Doc.OpenImage(Server.MapPath("/public/files/bozza.png"))
+	' Apply to all pages in the document
+	For Each Page in Doc.Pages
+		Page.Background.DrawImage Image, "x=0, y=0; scalex=1; scaley=1"
+	Next
+	Doc.SaveHttp "attachment;filename=BOZZA_richiesta_fornitura.pdf" 
 end if
-
-
 Set Doc = Nothing
-
 Set TextParam = Nothing
-
 Set ImageParam = Nothing
-
 Set Param_logo = Nothing
-
 Set Pdf = Nothing
-
-	
-
-	
-
 function startPagina(ciclo)
-
 	if ciclo=1 then
-
 		startDip=0
-
 	else
-
 		startDip=dipperpagina*(ciclo-1)
-
 	end if
-
 end function
-
 function endDip(ciclo)
-
 	endDip=dipperpagina*ciclo-1
-
 end function
-
 function offsDip(ciclo,n)
-
 	offsDip=(ciclo-1)*dipperpagina+n
-
 end function
-
-
-
 %>
