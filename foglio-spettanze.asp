@@ -295,7 +295,7 @@ end if%>
 					<tbody>
 					<%
 						do while not rs_prodotti.EOF
-						html_riga=""
+							html_riga=""
 							articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"">"&rs_prodotti("codice")&" "&rs_prodotti("articolo")&"</a>"
 							prezzo=cdbl(rs_prodotti("prezzo"))
 							quantita_tot=0
@@ -318,17 +318,21 @@ end if%>
 									quantita=0
 								end if
 								if quantita=0 then quantita=""	
-								html_riga=html_riga&"<td  class=""quantita"" id=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""">"&quantita&"</td>"
+								html_riga=html_riga&"<td class=""quantita"" id=""quantita_"&rs_prodotti("idpro")&"_"&arrDipendenti(0,n)&""">"&quantita&"</td>"
 							Next	
 					%>
-									<tr>									
-									<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%><%if session("vedi_prezzi")=1 or utente_admin then %><span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span><%end if %></td>
-									<%=html_riga%>
-									</tr>
+						<tr>									
+							<td class="<%=classe_articolo_v%> articoli idpro<%=rs_prodotti("idpro")%>"><%=articolo%>
+								<%if session("vedi_prezzi")=1 or utente_admin then %>
+									<span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span>
+								<%end if %>
+							</td>
+						<%=html_riga%>
+						</tr>
 					<%
-									rs_prodotti.MoveNext
-									Loop									
-									set rs_prodotti = Nothing
+						rs_prodotti.MoveNext
+						Loop									
+						set rs_prodotti = Nothing
 					%>
 					</tbody>
 					<%if session("vedi_prezzi")=1 or utente_admin then %>
@@ -337,11 +341,11 @@ end if%>
 							<td  >
 								<span>Totale iva esclusa per dipendente</span>
 							</td>
-									<%
-									for n = 0 to ubound_arrDipendenti
-										response.write "<td class=""quantita footer"" style=""font-size: smaller;""><span class=""footer_height"">"&simbolo_valuta&formatnumber(array_totali(n),2)&"</span></td>"
-									Next	
-									%>
+							<%
+							for n = 0 to ubound_arrDipendenti
+								response.write "<td class=""quantita footer"" style=""font-size: smaller;""><span class=""footer_height"">"&simbolo_valuta&formatnumber(array_totali(n),2)&"</span></td>"
+							Next	
+							%>
 						</tr>
 					</tfoot>
 					<%end if %>
