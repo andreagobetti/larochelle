@@ -193,12 +193,26 @@ for ciclo = 1 to cicli
 		.Cells(1).width=width_tabelle-L
 	End With
 	parametri_titolo="size=5; alignment=2;"
-	sql="select 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by codice"
+	sql="" & _
+		"SELECT 0 as idpre, prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
+		"FROM prodotti                                                     " & _
+		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
+		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
+		"WHERE prodotti.idpro in (                                         " & _
+		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
+		")                                                                 " & _
+		" order by codice"
 	set rs_prodotti=conn.execute(sql)
 	do while not rs_prodotti.eof 
 		Set Row = tabellaArticoli.Rows.Add(30) ' row height
 		with row
 			articolo=rs_prodotti("codice")&" "&rs_prodotti("articolo")
+			if Not IsNull(rs_prodotti("variante_a")) then
+				articolo = articolo & " - " & rs_prodotti("variante_a")
+			end if
+			if Not IsNull(rs_prodotti("variante_b")) then	
+				articolo = articolo & " - " & rs_prodotti("variante_b")
+			end if
 			prezzo=cdbl(rs_prodotti("prezzo"))
 			quantita_tot=0
 			'Loop su dipendenti
@@ -206,6 +220,12 @@ for ciclo = 1 to cicli
 			for n = 0 to colDip
 				quantita=0
 				sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")&" and iddip="&arrDipendenti(0,offsDip(ciclo,n))
+				if Not IsNull(rs_prodotti("variante_a")) then
+					sql=sql&" and IDvara="&rs_prodotti("IDvara")
+				end if
+				if Not IsNull(rs_prodotti("variante_b")) then	
+					sql=sql&" and IDvarb="&rs_prodotti("IDvarb")
+				end if
 				set rs_spettanze=conn.execute(sql)
 				if not rs_spettanze.eof then
 					val=0
