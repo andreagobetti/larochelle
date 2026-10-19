@@ -276,7 +276,7 @@ end if%>
 		</div><!-- col-md-12 -->
 	</div><!-- row -->
 	<div class="col-md-12" id="tablefull">
-		<a href="#" id="fullscreen" class="btn btn-info btn-xs">Modalità full-screen</A>
+		<!--<a href="#" id="fullscreen" class="btn btn-info btn-xs">Modalità full-screen</A>-->
 					<table id="example" class="display" style="width: 100%;" name="tabella">
 						<thead>
 							<tr>
