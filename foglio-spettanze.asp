@@ -208,7 +208,16 @@ end if%>
 				    <%
 				end if    
 			    if boolcompleto then
-					sql="select prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo, NULL AS IDvara, NULL AS IDvarb,NULL AS variante_a,NULL AS variante_b from prodotti INNER JOIN (select distinct idpro from  utenti_spettanze where idfoglio="&idfoglio&") as t on prodotti.idpro=t.idpro order by "&orderby
+					sql="SELECT DISTINCT prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo, utenti_spettanze.IDvara, utenti_spettanze.IDvarb,IF(utenti_spettanze.IDvara IS NOT NULL, varianti_a.variante_a,NULL) AS variante_a,IF(utenti_spettanze.IDvarb IS NOT NULL, varianti_b.variante_b,NULL) AS variante_b                   " & _
+						"FROM prodotti                                                                                          " & _                                                                                
+						"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro                                                " & _
+						"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro                                                " & _
+						"LEFT JOIN utenti_spettanze ON utenti_spettanze.idfoglio="&idfoglio&"                                           " & _
+						"AND prodotti.idpro = utenti_spettanze.idpro                                                            " & _
+						"AND (utenti_spettanze.IDvara IS NULL OR utenti_spettanze.IDvara = varianti_a.IDvara)                   " & _
+						"AND (utenti_spettanze.IDvarb IS NULL OR utenti_spettanze.IDvarb = varianti_b.IDvarb)                   " & _
+						"WHERE utenti_spettanze.idfoglio="&idfoglio&"                                                                   " & _
+						"ORDER BY "&orderby
 				else				
 					if idfoglio="" then idfoglio=0
 					sql="" & _

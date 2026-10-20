@@ -193,16 +193,15 @@ for ciclo = 1 to cicli
 		.Cells(1).width=width_tabelle-L
 	End With
 	parametri_titolo="size=5; alignment=2;"
-	sql="" & _
-		"SELECT DISTINCT prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
-		"FROM prodotti                                                     " & _
-		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
-		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
-		"JOIN utenti_spettanze AS u_s                                      " & _
-		"ON u_s.idpro=prodotti.idpro  									   " & _
-		"AND u_s.idfoglio="&idfoglio&"                                     " & _                                    
-		"AND (varianti_a.IDvara IS NULL OR u_s.IDvara=varianti_a.IDvara)   " & _                                 
-		"AND (varianti_b.IDvarb IS NULL OR u_s.IDvarb=varianti_b.IDvarb)   " & _
+	sql="SELECT DISTINCT prodotti.idpro, prodotti.codice, prodotti.articolo, prodotti.prezzo, utenti_spettanze.IDvara, utenti_spettanze.IDvarb,IF(utenti_spettanze.IDvara IS NOT NULL, varianti_a.variante_a,NULL) AS variante_a,IF(utenti_spettanze.IDvarb IS NOT NULL, varianti_b.variante_b,NULL) AS variante_b                   " & _
+		"FROM prodotti                                                                                          " & _                                                                                
+		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro                                                " & _
+		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro                                                " & _
+		"LEFT JOIN utenti_spettanze ON utenti_spettanze.idfoglio="&idfoglio&"                                   " & _
+		"AND prodotti.idpro = utenti_spettanze.idpro                                                            " & _
+		"AND (utenti_spettanze.IDvara IS NULL OR utenti_spettanze.IDvara = varianti_a.IDvara)                   " & _
+		"AND (utenti_spettanze.IDvarb IS NULL OR utenti_spettanze.IDvarb = varianti_b.IDvarb)                   " & _
+		"WHERE utenti_spettanze.idfoglio="&idfoglio&"                                                           " & _
 		"ORDER BY codice"
 	set rs_prodotti=conn.execute(sql)
 	do while not rs_prodotti.eof 
