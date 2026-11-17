@@ -135,3 +135,7 @@ textarea {
     margin-top:0px;
 	float:right;
 }
+
+#carrellino{
+display:none;
+}
