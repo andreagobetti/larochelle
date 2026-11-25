@@ -91,23 +91,28 @@ if oper="add" or oper="update" then
 	else
 		pubblico=1
 	end if
-		
+	Set cmd = Server.CreateObject("ADODB.Command")
+	Set cmd.ActiveConnection = conn
+	cmd.CommandType = 1
 	if oper="update" then
 		idappunto=request.form("id")
-		sql = "UPDATE appunti SET " & _
-		"testo='" & Replace(Trim(Request.Form("testo")), "'", "''") & "', " & _
-		"pubblico=" & pubblico & ", " & _
-		"fatto=" & CInt(checkbox("fatto")) & _
-		" WHERE id=" & CLng(idappunto)
-		conn.Execute sql
-	else		
-		sql = "INSERT INTO appunti (data,iduser,testo,pubblico,fatto) VALUES (" & _
-			"NOW()," & CLng(sessioniduser) & ",'" & _
-			Replace(Trim(Request.Form("testo")), "'", "''") & "'," & _
-			pubblico & "," & CInt(checkbox("fatto")) & ")"
-		conn.Execute sql
-		if idappunto="" then idappunto=Get_last_id("appunti")
+		cmd.CommandText = "UPDATE appunti SET testo=?, pubblico=?, fatto=? WHERE id=?"
+		cmd.Parameters.Append cmd.CreateParameter("p1", 201, 1, Len(Request.Form("testo")) + 1, CStr(Request.Form("testo")))
+		cmd.Parameters.Append cmd.CreateParameter("p2", 17, 1, , CInt(pubblico))
+		cmd.Parameters.Append cmd.CreateParameter("p3", 17, 1, , CInt(checkbox("fatto")))
+		cmd.Parameters.Append cmd.CreateParameter("p4", 3, 1, , CLng(idappunto))
+	else				
+		cmd.CommandText = "INSERT INTO appunti " & _
+			"(data, iduser, testo, pubblico, fatto) " & _
+			"VALUES (NOW(), ?, ?, ?, ?)"
+		cmd.Parameters.Append cmd.CreateParameter("p1", 3, 1, , CLng(sessioniduser))
+		cmd.Parameters.Append cmd.CreateParameter("p2", 201, 1, Len(Request.Form("testo")) + 1, CStr(Request.Form("testo")))
+		cmd.Parameters.Append cmd.CreateParameter("p3", 17, 1, , CInt(pubblico))
+		cmd.Parameters.Append cmd.CreateParameter("p4", 17, 1, , CInt(checkbox("fatto")))
 	end if
+	cmd.Execute
+	Set cmd = Nothing
+	if idappunto="" then idappunto=Get_last_id("appunti")
 	'DESTINATARI
 	arr_tags = split(str_arr_tags,",")
 	iubound=ubound(arr_tags)
