@@ -92,28 +92,22 @@ if oper="add" or oper="update" then
 		pubblico=1
 	end if
 		
-	
-	
-	
-	Set rs = Server.CreateObject("ADODB.Recordset")
-	sql="select * from appunti"
-	if oper="add" then
-		rs.Open sql, conn, 3, 3
-		rs.addnew
-		rs("data")=now()
-		rs("iduser")=sessioniduser
-	else
+	if oper="update" then
 		idappunto=request.form("id")
-		sql= sql & " where id=" & idappunto
-		rs.Open sql, conn, 3, 3
+		sql = "UPDATE appunti SET " & _
+		"testo='" & Replace(Trim(Request.Form("testo")), "'", "''") & "', " & _
+		"pubblico=" & pubblico & ", " & _
+		"fatto=" & CInt(checkbox("fatto")) & _
+		" WHERE id=" & CLng(idappunto)
+		conn.Execute sql
+	else		
+		sql = "INSERT INTO appunti (data,iduser,testo,pubblico,fatto) VALUES (" & _
+			"NOW()," & CLng(sessioniduser) & ",'" & _
+			Replace(Trim(Request.Form("testo")), "'", "''") & "'," & _
+			pubblico & "," & CInt(checkbox("fatto")) & ")"
+		conn.Execute sql
+		if idappunto="" then idappunto=Get_last_id("appunti")
 	end if
-	rs("testo")=trim(request.form("testo"))
-	rs("pubblico")=pubblico
-	rs("fatto")=checkbox("fatto")
-	rs.update
-	if idappunto="" then idappunto=Get_last_id("appunti")
-	rs.close
-	set rs = Nothing
 	'DESTINATARI
 	arr_tags = split(str_arr_tags,",")
 	iubound=ubound(arr_tags)
