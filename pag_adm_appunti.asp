@@ -109,7 +109,11 @@ if oper="add" or oper="update" then
 	end if
 	rs("testo")=trim(request.form("testo"))
 	rs("pubblico")=pubblico
-	rs("fatto")=checkbox("fatto")
+	if request.form("fatto")="si" then
+		rs("fatto")=1
+	else
+		rs("fatto")=0
+	end if
 	rs.update
 	if idappunto="" then idappunto=Get_last_id("appunti")
 	rs.close
