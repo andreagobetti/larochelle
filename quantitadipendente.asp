@@ -24,7 +24,7 @@ end if
 	sql="SELECT	utenti_foglio_spettanze.* FROM utenti_foglio_spettanze WHERE id="&idfoglio
 	set rs_foglio=conn.Execute(sql)
 	sql="" & _
-		"SELECT prodotti.*,varianti_a.IDvara,varianti_b.IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
+		"SELECT prodotti.*,varianti_a.IDvara AS IDvara,varianti_b.IDvarb AS IDvarb,varianti_a.variante_a,varianti_b.variante_b  " & _
 		"FROM prodotti                                                     " & _
 		"LEFT JOIN varianti_a ON varianti_a.idpro=prodotti.idpro           " & _
 		"LEFT JOIN varianti_b ON varianti_b.idpro=prodotti.idpro           " & _
@@ -33,6 +33,15 @@ end if
 		"	UNION                                                          " & _
 		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
 		")                                                                 " & _
+		"UNION                                                             " & _
+		"SELECT prodotti.*,NULL AS IDvara,NULL AS IDvarb,NULL,NULL         " & _
+		"FROM prodotti                                                     " & _
+		"WHERE prodotti.idpro in (                                         " & _
+		"	SELECT idpro FROM `preferiti` WHERE iduser="&iduser&"          " & _
+		"	UNION                                                          " & _
+		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
+		")                                                                 " & _
+		"GROUP BY prodotti.idpro, IDvara, IDvarb                           " & _
 		" order by "&orderby
 	set rs_prodotti=conn.execute(sql)
 %>
@@ -67,7 +76,16 @@ end if
 							<tbody>
 							<%
 							do while not rs_prodotti.EOF
-								sql="select utenti_spettanze.* from utenti_spettanze where idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")
+								sql="" & _
+									"SELECT utenti_spettanze.*, idpro IN (                             " & _
+									"	SELECT idpro                                                   " & _
+									"	FROM utenti_spettanze                                          " & _
+									"	WHERE idfoglio="&idfoglio&"                                    " & _
+									"   AND idpro="&rs_prodotti("idpro")&"                             " & _
+									"   AND (IDvara IS NOT NULL OR IDvarb IS NOT NULL)                 " & _
+									") AS atLeastOneVariant                                            " & _
+									"FROM utenti_spettanze                                             " & _
+									"WHERE idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")
 								
 								articolo="<a href=""/product.asp?idpro="&rs_prodotti("idpro")&""" target=""_blank"" tabindex=""-1""  >"&rs_prodotti("codice")&" "&rs_prodotti("articolo")
 								if Not IsNull(rs_prodotti("variante_a")) or Not IsNull(rs_prodotti("variante_b")) then
@@ -89,8 +107,18 @@ end if
 								else
 									quantita=0
 								end if
-								if quantita=0 then quantita=""
-								testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
+								if quantita=0 then 
+									quantita=""									
+								end if
+								if rs_spettanze("atLeastOneVariant") then
+									if quantita="" then
+										testocella=" - "
+									else
+										testocella="/!\ <input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
+									end if
+								else
+									testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
+								end if
 							%>
 								<tr>
 									<td style="text-align: left;">
