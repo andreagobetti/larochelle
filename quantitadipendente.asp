@@ -41,7 +41,7 @@ end if
 		"	UNION                                                          " & _
 		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
 		")                                                                 " & _
-		"GROUP BY prodotti.idpro, IDvara, IDvarb                           " & _
+		"GROUP BY idpro, IDvara, IDvarb                                    " & _
 		" order by "&orderby
 	set rs_prodotti=conn.execute(sql)
 %>
@@ -77,13 +77,7 @@ end if
 							<%
 							do while not rs_prodotti.EOF
 								sql="" & _
-									"SELECT utenti_spettanze.*, idpro IN (                             " & _
-									"	SELECT idpro                                                   " & _
-									"	FROM utenti_spettanze                                          " & _
-									"	WHERE idfoglio="&idfoglio&"                                    " & _
-									"   AND idpro="&rs_prodotti("idpro")&"                             " & _
-									"   AND (IDvara IS NOT NULL OR IDvarb IS NOT NULL)                 " & _
-									") AS atLeastOneVariant                                            " & _
+									"SELECT utenti_spettanze.*                            " & _
 									"FROM utenti_spettanze                                             " & _
 									"WHERE idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")
 								
@@ -94,33 +88,48 @@ end if
 								if Not IsNull(rs_prodotti("variante_a")) then
 									articolo = articolo & "<button type='button'>" & rs_prodotti("variante_a") & "</button> " 
 									sql=sql&" and IDvara="&rs_prodotti("IDvara")
+								else
+									sql=sql&" and IDvara IS NULL"
 								end if
 								if Not IsNull(rs_prodotti("variante_b")) then	
 									articolo = articolo & "<button type='button'>" & rs_prodotti("variante_b") & "</button> " 
 									sql=sql&" and IDvarb="&rs_prodotti("IDvarb")
+								else
+									sql=sql&" and IDvarb IS NULL"
 								end if
 								articolo = articolo & "</a>"
 								sql=sql&" and iddip="&iddip
 								set rs_spettanze=conn.execute(sql)
+								vara = Null
+								varb = Null
 								if not rs_spettanze.eof then
 									quantita=rs_spettanze("quantita")
+									varb = rs_prodotti("IDvarb")
+									vara = rs_prodotti("IDvara")
 								else
 									quantita=0
+									no_results=True
 								end if
 								if quantita=0 then 
 									quantita=""									
 								end if
-								if rs_spettanze("atLeastOneVariant") then
-									if quantita="" then
-										testocella=" - "
+								sql = "SELECT SUM(IFNULL(IDvarb,0)+IFNULL(IDvara,0)) AS counter FROM utenti_spettanze WHERE idfoglio="&idfoglio&" and idpro= "&rs_prodotti("idpro")
+								set rs_has_variables=conn.execute(sql)
+								at_least_one_variant = CInt(rs_has_variables("counter"))>0
+								if at_least_one_variant and IsNull(vara) and IsNull(varb) then
+									if quantita = "" then
+										articolo = ""
+										testocella = ""
+										display="display:none;"
 									else
-										testocella="/!\ <input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
+										articolo = articolo & "<br><strong style='color:red'>Rimuovere questi "& quantita &" elementi e scegliere questo stesso prodotto, ma con le varianti desiderate</strong>"
+										testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
 									end if
 								else
 									testocella="<input type=""text"" name=""quantita_"&rs_prodotti("idpro")&"_"&rs_prodotti("IDvara")&"_"&rs_prodotti("IDvarb")&"_"&iddip&""" class=""spett"" "&disabled&"value="""&quantita&""">"
 								end if
 							%>
-								<tr>
+								<tr style="<%=display%>">
 									<td style="text-align: left;">
 										<%=articolo%> <%if session("vedi_prezzi")=1 then %><span class="pull-right prezzo"><%=simbolo_valuta&rs_prodotti("prezzo")%></span><%end if %>
 										</td>
@@ -168,7 +177,16 @@ end if
 		"	UNION                                                          " & _
 		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
 		")                                                                 " & _
-		" order by prodotti.codice"
+		"UNION                                                             " & _
+		"SELECT prodotti.*,NULL AS IDvara,NULL AS IDvarb,NULL,NULL         " & _
+		"FROM prodotti                                                     " & _
+		"WHERE prodotti.idpro in (                                         " & _
+		"	SELECT idpro FROM `preferiti` WHERE iduser="&iduser&"          " & _
+		"	UNION                                                          " & _
+		"	select idpro from utenti_spettanze where idfoglio="&idfoglio&" " & _
+		")                                                                 " & _
+		"GROUP BY idpro, IDvara, IDvarb                           " & _
+		" order by codice"
 		Set rs_spettanza = Server.CreateObject("ADODB.Recordset")
 		set rs_prodotti=conn.execute(sql)
 		cisonoquantita=false
@@ -183,9 +201,13 @@ end if
 			sql2="select * from  utenti_spettanze where idfoglio="&idfoglio&" and idpro="&idpro&" and iddip="&iddip
 			if Not IsNull(IDvara) then
 				sql2=sql2&" and IDvara="&rs_prodotti("IDvara")
+			else
+				sql2=sql2&" and IDvara IS NULL"
 			end if
 			if Not IsNull(IDvarb) then	
 				sql2=sql2&" and IDvarb="&rs_prodotti("IDvarb")
+			else
+				sql2=sql2&" and IDvarb IS NULL"
 			end if
 			rs_spettanza.open sql2,conn,3 ,3
 			if quantita<>"" and quantita<>"0" and isnumeric(quantita) then
